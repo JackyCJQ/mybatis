@@ -36,7 +36,7 @@ import java.util.*;
 public class XMLMapperBuilder extends BaseBuilder {
     //自己包装的一个xml文档解析器 里面就是解析xml文件生成的document
     private XPathParser parser;
-    //
+    //mapper构建助手
     private MapperBuilderAssistant builderAssistant;
     //对应SQL片段
     private Map<String, XNode> sqlFragments;
@@ -79,7 +79,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     public void parse() {
         //如果没有加载过再加载，防止重复加载
         if (!configuration.isResourceLoaded(resource)) {
-            //配置mapper
+            //解析mapper
             configurationElement(parser.evalNode("/mapper"));
             //标记一下，已经加载过了
             configuration.addLoadedResource(resource);
@@ -108,11 +108,12 @@ public class XMLMapperBuilder extends BaseBuilder {
      */
     private void configurationElement(XNode context) {
         try {
-            //1.配置namespace
+            //1.配置namespace，不能为空
             String namespace = context.getStringAttribute("namespace");
             if (namespace.equals("")) {
                 throw new BuilderException("Mapper's namespace cannot be empty");
             }
+            //配置命名空间
             builderAssistant.setCurrentNamespace(namespace);
             //2.配置cache-ref
             cacheRefElement(context.evalNode("cache-ref"));
@@ -240,6 +241,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     private void cacheElement(XNode context) throws Exception {
         if (context != null) {
             String type = context.getStringAttribute("type", "PERPETUAL");
+            //获取缓存的类
             Class<? extends Cache> typeClass = typeAliasRegistry.resolveAlias(type);
             //缓存的算法
             String eviction = context.getStringAttribute("eviction", "LRU");
@@ -430,6 +432,7 @@ public class XMLMapperBuilder extends BaseBuilder {
             String databaseId = context.getStringAttribute("databaseId");
             String id = context.getStringAttribute("id");
             //ID就是namespace+配置的id
+            //这里的sql片段 有一些规则 要么就是nameSapce.name  要么就是name
             id = builderAssistant.applyCurrentNamespace(id, false);
             //比较简单，就是将sql片段放入hashmap,不过此时还没有解析sql片段
             if (databaseIdMatchesCurrent(id, databaseId, requiredDatabaseId)) {

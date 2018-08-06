@@ -23,7 +23,7 @@ import java.sql.SQLException;
 /**
  * @author Clinton Begin
  */
-public class LongTypeHandler extends BaseTypeHandler<Long> {
+public class LongTypeHandler extends BaseTypeHandler<Long>  {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Long parameter, JdbcType jdbcType)

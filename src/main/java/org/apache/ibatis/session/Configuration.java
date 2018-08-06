@@ -71,11 +71,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 import java.util.*;
 
 /**
- * @author Clinton Begin
- */
-
-/**
- * 配置，里面好多配置项
+ * 全局核心配置
  */
 public class Configuration {
 
@@ -105,7 +101,7 @@ public class Configuration {
     protected Class<? extends Log> logImpl;
     //默认本地缓存的范围为session
     protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
-    //当Jdbc的类型为NUll时默认使用other来处理
+    //当Jdbc的类型为NUll时默认使用other来处理，数据库自适应
     protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
     //延迟加载触发的方法
     protected Set<String> lazyLoadTriggerMethods = new HashSet<String>(Arrays.asList(new String[]{"equals", "clone", "hashCode", "toString"}));
@@ -150,15 +146,15 @@ public class Configuration {
     protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
 
     //StrictMap就是当出现同样的key时不能默认覆盖掉 而应该采取报错的形式 避免覆盖掉已有的配置
-    //映射的sql语句,存在Map里
+    //映射的sql语句,存在Map里，每个方法对应一条数据
     protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection");
-    //缓存,存在Map里
+    //缓存,存在Map里，没一个查询方法对应一条
     protected final Map<String, Cache> caches = new StrictMap<Cache>("Caches collection");
-    //结果映射,存在Map里
+    //结果映射,存在Map里 每一个方法对应一个
     protected final Map<String, ResultMap> resultMaps = new StrictMap<ResultMap>("Result Maps collection");
-    //查寻参数
+    //查寻参数 每个查询方法对应一条
     protected final Map<String, ParameterMap> parameterMaps = new StrictMap<ParameterMap>("Parameter Maps collection");
-    //主键生成
+    //主键生成 对于插入的语句 生成主键的方式
     protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<KeyGenerator>("Key Generators collection");
 
     //加载资源 set<String>对应每一个mapper的路径<mapper resource="org/mybatis/builder/PostMapper.xml"/>
@@ -168,7 +164,7 @@ public class Configuration {
 
     //不完整的SQL语句
     protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<XMLStatementBuilder>();
-    //缓存的索引
+    //缓存引用另一个缓存有问题的缓存
     protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<CacheRefResolver>();
     //返回结果map的解析
     protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<ResultMapResolver>();
@@ -185,7 +181,7 @@ public class Configuration {
     protected final Map<String, String> cacheRefMap = new HashMap<String, String>();
 
 
-    //为什么提供这么一个有参构造方法？？
+    //可能根据不同的环境 对饮不同的配置
     public Configuration(Environment environment) {
         this();
         this.environment = environment;
@@ -228,6 +224,7 @@ public class Configuration {
         languageRegistry.register(RawLanguageDriver.class);
     }
 
+    //设置日志前缀
     public String getLogPrefix() {
         return logPrefix;
     }
@@ -259,6 +256,7 @@ public class Configuration {
         this.callSettersOnNulls = callSettersOnNulls;
     }
 
+
     public String getDatabaseId() {
         return databaseId;
     }
@@ -266,6 +264,7 @@ public class Configuration {
     public void setDatabaseId(String databaseId) {
         this.databaseId = databaseId;
     }
+
 
     public Class<?> getConfigurationFactory() {
         return configurationFactory;
@@ -299,6 +298,7 @@ public class Configuration {
         this.mapUnderscoreToCamelCase = mapUnderscoreToCamelCase;
     }
 
+    //添加解析的资源
     public void addLoadedResource(String resource) {
         loadedResources.add(resource);
     }
@@ -307,7 +307,7 @@ public class Configuration {
         return loadedResources.contains(resource);
     }
 
-
+    //添加数据库环境
     public Environment getEnvironment() {
         return environment;
     }
@@ -334,7 +334,7 @@ public class Configuration {
         this.lazyLoadingEnabled = lazyLoadingEnabled;
     }
 
-
+    //设置代理工厂 默认是jdk代理工厂
     public ProxyFactory getProxyFactory() {
         return proxyFactory;
     }
@@ -363,6 +363,7 @@ public class Configuration {
         this.multipleResultSetsEnabled = multipleResultSetsEnabled;
     }
 
+    //这里是不是可以添加一个添加单独的方法？
     public Set<String> getLazyLoadTriggerMethods() {
         return lazyLoadTriggerMethods;
     }
@@ -431,7 +432,7 @@ public class Configuration {
         this.jdbcTypeForNull = jdbcTypeForNull;
     }
 
-
+    //获取所有的变量
     public Properties getVariables() {
         return variables;
     }
@@ -440,7 +441,7 @@ public class Configuration {
         this.variables = variables;
     }
 
-
+    //获取别名和类型处理工厂
     public TypeHandlerRegistry getTypeHandlerRegistry() {
         return typeHandlerRegistry;
     }
@@ -450,6 +451,7 @@ public class Configuration {
     }
 
     /**
+     * 获取接口注册器
      * @since 3.2.2
      */
     public MapperRegistry getMapperRegistry() {
@@ -475,6 +477,7 @@ public class Configuration {
     }
 
     /**
+     * 获取所有的过滤器链
      * @since 3.2.2
      */
     public List<Interceptor> getInterceptors() {
@@ -521,17 +524,7 @@ public class Configuration {
         resultSetHandler = (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler);
         return resultSetHandler;
     }
-
-    /**
-     * 创建语句处理器
-     * @param executor
-     * @param mappedStatement
-     * @param parameterObject
-     * @param rowBounds
-     * @param resultHandler
-     * @param boundSql
-     * @return
-     */
+    //创建方法处理器
     public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
         //创建路由选择语句处理器
         StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
@@ -539,7 +532,7 @@ public class Configuration {
         statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
         return statementHandler;
     }
-
+    //执行器和事务搞在一起
     public Executor newExecutor(Transaction transaction) {
         return newExecutor(transaction, defaultExecutorType);
     }
@@ -610,7 +603,7 @@ public class Configuration {
         return caches.containsKey(id);
     }
 
-
+     //添加结果集
     public void addResultMap(ResultMap rm) {
         resultMaps.put(rm.getId(), rm);
         checkLocallyForDiscriminatedNestedResultMaps(rm);
@@ -633,8 +626,7 @@ public class Configuration {
         return resultMaps.containsKey(id);
     }
 
-
-
+    //添加参数结果集相关信息
     public void addParameterMap(ParameterMap pm) {
         parameterMaps.put(pm.getId(), pm);
     }
@@ -655,7 +647,7 @@ public class Configuration {
         return parameterMaps.containsKey(id);
     }
 
-
+    //mappedStatement相关的信息
     public void addMappedStatement(MappedStatement ms) {
         mappedStatements.put(ms.getId(), ms);
     }
@@ -733,6 +725,7 @@ public class Configuration {
         mapperRegistry.addMappers(packageName);
     }
 
+     // 添加一个单独的一个类
     public <T> void addMapper(Class<T> type) {
         mapperRegistry.addMapper(type);
     }
@@ -749,14 +742,18 @@ public class Configuration {
     public boolean hasStatement(String statementName) {
         return hasStatement(statementName, true);
     }
-
     public boolean hasStatement(String statementName, boolean validateIncompleteStatements) {
         if (validateIncompleteStatements) {
             buildAllStatements();
         }
         return mappedStatements.containsKey(statementName);
     }
-    //以namespace为主键
+
+    /**
+     *
+     * @param namespace 当前namespace
+     * @param referencedNamespace 引用的namespace
+     */
     public void addCacheRef(String namespace, String referencedNamespace) {
         cacheRefMap.put(namespace, referencedNamespace);
     }
@@ -812,7 +809,7 @@ public class Configuration {
                 Object value = entry.getValue();
                 if (value instanceof ResultMap) {
                     ResultMap entryResultMap = (ResultMap) value;
-                     //如果这个没有嵌套的结果了
+                    //如果这个没有嵌套的结果了
                     if (!entryResultMap.hasNestedResultMaps() && entryResultMap.getDiscriminator() != null) {
                         Collection<String> discriminatedResultMapNames = entryResultMap.getDiscriminator().getDiscriminatorMap().values();
                         if (discriminatedResultMapNames.contains(rm.getId())) {
@@ -844,6 +841,7 @@ public class Configuration {
     protected static class StrictMap<V> extends HashMap<String, V> {
 
         private static final long serialVersionUID = -4950446264854982944L;
+        //起了一个名字 用于简单的标识
         private String name;
 
         public StrictMap(String name, int initialCapacity, float loadFactor) {

@@ -35,6 +35,7 @@ import java.util.Properties;
 public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
   private final SqlSessionFactory sqlSessionFactory;
+  //sqlsession代理
   private final SqlSession sqlSessionProxy;
 
   private ThreadLocal<SqlSession> localSqlSession = new ThreadLocal<SqlSession>();

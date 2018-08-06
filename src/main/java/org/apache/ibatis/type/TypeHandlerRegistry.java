@@ -23,11 +23,6 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
-
-/**
- * @author Clinton Begin
- */
-
 /**
  * 类型处理器注册机
  * 不管是Java类型还是jdbc类型都一个一个对应的类型处理器
@@ -164,16 +159,18 @@ public final class TypeHandlerRegistry {
     public <T> TypeHandler<T> getTypeHandler(TypeReference<T> javaTypeReference) {
         return getTypeHandler(javaTypeReference, null);
     }
-
+     //每个jdbc类型对应一个处理器
     public TypeHandler<?> getTypeHandler(JdbcType jdbcType) {
         return JDBC_TYPE_HANDLER_MAP.get(jdbcType);
     }
 
     public <T> TypeHandler<T> getTypeHandler(Class<T> type, JdbcType jdbcType) {
+        //不是定义的typehanler类型
         return getTypeHandler((Type) type, jdbcType);
     }
 
     public <T> TypeHandler<T> getTypeHandler(TypeReference<T> javaTypeReference, JdbcType jdbcType) {
+        //在这里使用到了定义好的typehandler类型
         return getTypeHandler(javaTypeReference.getRawType(), jdbcType);
     }
 
@@ -192,6 +189,7 @@ public final class TypeHandlerRegistry {
         }
         //如果是枚举类型的类型处理器 则新建一个枚举类型的处理器
         if (handler == null && type != null && type instanceof Class && Enum.class.isAssignableFrom((Class<?>) type)) {
+             //按照名字的枚举处理器
             handler = new EnumTypeHandler((Class<?>) type);
         }
         // type drives generics here
@@ -299,6 +297,7 @@ public final class TypeHandlerRegistry {
         MappedTypes mappedTypes = typeHandlerClass.getAnnotation(MappedTypes.class);
         if (mappedTypes != null) {
             for (Class<?> javaTypeClass : mappedTypes.value()) {
+                //只要存在一个就可以
                 register(javaTypeClass, typeHandlerClass);
                 mappedTypeFound = true;
             }
@@ -353,7 +352,7 @@ public final class TypeHandlerRegistry {
         Set<Class<? extends Class<?>>> handlerSet = resolverUtil.getClasses();
         for (Class<?> type : handlerSet) {
             //Ignore inner classes and interfaces (including package-info.java) and abstract classes
-            //不是匿名内部类 不是借口 不是抽象类 则进行注册
+            //不是匿名内部类 不是接口 不是抽象类 则进行注册
             if (!type.isAnonymousClass() && !type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {//获取此类或接口以整数编码的 Java 语言修饰符
                 register(type);
             }

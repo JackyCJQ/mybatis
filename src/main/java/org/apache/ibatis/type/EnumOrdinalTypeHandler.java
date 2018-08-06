@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * 对于枚举类 默认是放入的枚举类的顺序
  * @author Clinton Begin
  */
 public class EnumOrdinalTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
@@ -33,6 +34,7 @@ public class EnumOrdinalTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E
       throw new IllegalArgumentException("Type argument cannot be null");
     }
     this.type = type;
+    //获取所有的声明
     this.enums = type.getEnumConstants();
     if (this.enums == null) {
       throw new IllegalArgumentException(type.getSimpleName() + " does not represent an enum type.");

@@ -26,10 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Clinton Begin
- */
-
-/**
  * 动态上下文
  * 
  */

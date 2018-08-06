@@ -23,10 +23,6 @@ import org.apache.ibatis.session.Configuration;
 import java.util.Map;
 
 /**
- * @author Clinton Begin
- */
-
-/**
  * 动态SQL源码
  * 
  */

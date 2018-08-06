@@ -19,11 +19,6 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-/**
- * @author Clinton Begin
- */
-
 /**
  * String类型处理器
  * 调用PreparedStatement.setString, ResultSet.getString, CallableStatement.getString

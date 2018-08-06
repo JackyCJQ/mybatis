@@ -25,12 +25,12 @@ import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * The 2nd level cache transactional buffer.
- * 
+ * <p>
  * This class holds all cache entries that are to be added to the 2nd level cache during a Session.
- * Entries are sent to the cache when commit is called or discarded if the Session is rolled back. 
- * Blocking cache support has been added. Therefore any get() that returns a cache miss 
- * will be followed by a put() so any lock associated with the key can be released. 
- * 
+ * Entries are sent to the cache when commit is called or discarded if the Session is rolled back.
+ * Blocking cache support has been added. Therefore any get() that returns a cache miss
+ * will be followed by a put() so any lock associated with the key can be released.
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -42,113 +42,120 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 public class TransactionalCache implements Cache {
 
-  private Cache delegate;
-  //commit时要不要清缓存
-  private boolean clearOnCommit;
-  //commit时要添加的元素
-  private Map<Object, Object> entriesToAddOnCommit;
-  //没有命中的缓存
-  private Set<Object> entriesMissedInCache;
+    //代理的缓存
+    private Cache delegate;
+    //commit时要不要清缓存
+    private boolean clearOnCommit;
+    //commit时要添加的元素
+    private Map<Object, Object> entriesToAddOnCommit;
+    //没有命中的缓存
+    private Set<Object> entriesMissedInCache;
 
-  public TransactionalCache(Cache delegate) {
-    this.delegate = delegate;
-    //默认commit时不清缓存
-    this.clearOnCommit = false;
-    this.entriesToAddOnCommit = new HashMap<Object, Object>();
-    this.entriesMissedInCache = new HashSet<Object>();
-  }
-
-  @Override
-  public String getId() {
-    return delegate.getId();
-  }
-
-  @Override
-  public int getSize() {
-    return delegate.getSize();
-  }
-
-  @Override
-  public Object getObject(Object key) {
-    // issue #116
-    Object object = delegate.getObject(key);
-    if (object == null) {
-      entriesMissedInCache.add(key);
+    public TransactionalCache(Cache delegate) {
+        this.delegate = delegate;
+        //默认commit时不清缓存
+        this.clearOnCommit = false;
+        this.entriesToAddOnCommit = new HashMap<Object, Object>();
+        this.entriesMissedInCache = new HashSet<Object>();
     }
-    // 当获取缓存的时候 如果设置了 提交时清除 则获取的时候直接返回null
-    if (clearOnCommit) {
-      return null;
-    } else {
-      return object;
+
+    @Override
+    public String getId() {
+        return delegate.getId();
     }
-  }
 
-  @Override
-  public ReadWriteLock getReadWriteLock() {
-    return null;
-  }
-
-  @Override
-  public void putObject(Object key, Object object) {
-    entriesToAddOnCommit.put(key, object);
-  }
-
-  @Override
-  public Object removeObject(Object key) {
-    return null;
-  }
-
-  @Override
-  public void clear() {
-    //设置这个标志 以后获取的时候 就可能不能从缓存中获取了
-    clearOnCommit = true;
-    entriesToAddOnCommit.clear();
-  }
-
-  //多了commit方法，提供事务功能
-  public void commit() {
-    if (clearOnCommit) {
-      delegate.clear();
+    @Override
+    public int getSize() {
+        return delegate.getSize();
     }
-    flushPendingEntries();
-    reset();
-  }
 
-  public void rollback() {
-    unlockMissedEntries();
-    reset();
-  }
-
-  /**
-   * 重置这个缓存管理里面的内容
-   */
-  private void reset() {
-    clearOnCommit = false;
-    entriesToAddOnCommit.clear();
-    entriesMissedInCache.clear();
-  }
-
-  /**
-   * 更新缓存
-   */
-  private void flushPendingEntries() {
-    for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
-      delegate.putObject(entry.getKey(), entry.getValue());
+    @Override
+    public Object getObject(Object key) {
+        // issue #116
+        Object object = delegate.getObject(key);
+        if (object == null) {
+            entriesMissedInCache.add(key);
+        }
+        // 当获取缓存的时候 如果设置了 提交时清除 则获取的时候直接返回null
+        if (clearOnCommit) {
+            return null;
+        } else {
+            return object;
+        }
     }
-    for (Object entry : entriesMissedInCache) {
-      if (!entriesToAddOnCommit.containsKey(entry)) {
-        delegate.putObject(entry, null);
-      }
-    }
-  }
 
-  /**
-   * 为什么用nulll来填充
-   */
-  private void unlockMissedEntries() {
-    for (Object entry : entriesMissedInCache) {
-      delegate.putObject(entry, null);
+    @Override
+    public ReadWriteLock getReadWriteLock() {
+        return null;
     }
-  }
+
+    @Override
+    public void putObject(Object key, Object object) {
+        entriesToAddOnCommit.put(key, object);
+    }
+
+    @Override
+    public Object removeObject(Object key) {
+        return null;
+    }
+
+    @Override
+    public void clear() {
+        //设置这个标志 以后获取的时候 就直接返回null
+        clearOnCommit = true;
+        entriesToAddOnCommit.clear();
+    }
+
+    /**
+     *事务缓存的提交
+     */
+    public void commit() {
+        if (clearOnCommit) {
+            delegate.clear();
+        }
+        flushPendingEntries();
+        reset();
+    }
+
+    /**
+     * 事务缓存的回滚
+     */
+    public void rollback() {
+        unlockMissedEntries();
+        reset();
+    }
+
+    /**
+     * 重置这个缓存管理里面的内容
+     */
+    private void reset() {
+        clearOnCommit = false;
+        entriesToAddOnCommit.clear();
+        entriesMissedInCache.clear();
+    }
+
+    /**
+     * 更新缓存
+     */
+    private void flushPendingEntries() {
+        //循环提交
+        for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
+            delegate.putObject(entry.getKey(), entry.getValue());
+        }
+        for (Object entry : entriesMissedInCache) {
+            if (!entriesToAddOnCommit.containsKey(entry)) {
+                delegate.putObject(entry, null);
+            }
+        }
+    }
+
+    /**
+     * 为什么用nulll来填充
+     */
+    private void unlockMissedEntries() {
+        for (Object entry : entriesMissedInCache) {
+            delegate.putObject(entry, null);
+        }
+    }
 
 }

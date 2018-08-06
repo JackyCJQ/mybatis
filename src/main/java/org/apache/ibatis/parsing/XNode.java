@@ -25,14 +25,15 @@ import java.util.Properties;
 
 /**
  * 对org.w3c.dom.Node的包装
+ * 提供更详细的信息
  */
 public class XNode {
 
     //org.w3c.dom.Node
-    private Node node;
-    private String name;//对应节点的名字
-    private String body;  //如果是文本类型的会有值
-    private Properties attributes;//这个节点下面可能有配置属性，如果引用了外部配置文件或者自定义的文件，则已经实现了替换
+    private Node node;//原来的节点
+    private String name;//如果有的话 对应节点的名字
+    private String body;  //如果是文本类型的会有文本值
+    private Properties attributes;//这个节点中的属性的配置
     private Properties variables;//对应全局的属性配置的引用
     //XPathParser方便xpath解析
     private XPathParser xpathParser;
@@ -384,13 +385,16 @@ public class XNode {
     }
 
     /**
-     * 解析这个节点下配置的属性
+     * 解析这个节点中配置的属性 <environment id="development"> 指这个id属性
+     * <property name="driver" value="com.mysql.jdbc.Driver"/>
+     * 解析完成后attributes-->[name-->drive,value-->com.mysql.jdbc.Driver]
      *
      * @param n
      * @return
      */
     private Properties parseAttributes(Node n) {
         Properties attributes = new Properties();
+        //
         NamedNodeMap attributeNodes = n.getAttributes();
         if (attributeNodes != null) {
             for (int i = 0; i < attributeNodes.getLength(); i++) {
@@ -425,8 +429,13 @@ public class XNode {
     }
 
     /**
-     * 获取节点信息
-     *
+     * <select id="selectById" resultType="sysUser" >
+     *      select
+     *              user_name userName,
+     *              user_email userEmail
+     *       from sys_user WHERE id=#{0} and user_name=#{1}
+     * </select>
+     *   获取下面的文本信息
      * @param child
      * @return
      */

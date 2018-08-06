@@ -44,17 +44,19 @@ public class GenericTokenParser {
             char[] src = text.toCharArray();
             //记录处理过的位置
             int offset = 0;
+            //第一次从0开始寻找
             int start = text.indexOf(openToken, offset);
             //#{favouriteSection,jdbcType=VARCHAR}
             // 比如可以解析${first_name} ${initial} sdf${last_name} reporting.这样的字符串,里面有3个 ${}
             // 逻辑是先把openToken都去掉，然后在处理closeToken时在进行替换
             while (start > -1) {
-                //判断一下 ${ 前面是否是反斜杠，有的话就去掉
+                //判断一下 ${ 前面是否是反斜杠，有的话就去掉，此时是不需要解析属性
                 if (start > 0 && src[start - 1] == '\\') {
+                    //仅仅是去掉反斜杠
                     builder.append(src, offset, start - offset - 1).append(openToken);
-                    //去掉openToken这两个字符
                     offset = start + openToken.length();
                 } else {
+                    //这里是需要解析属性
                     int end = text.indexOf(closeToken, start);
                     if (end == -1) {
                         builder.append(src, offset, src.length - offset);

@@ -300,8 +300,9 @@ public class XMLConfigBuilder extends BaseBuilder {
                 //这里会覆盖之前写的配置
                 defaults.putAll(vars);
             }
-            // 应该是解析mapper的时候替换为真实值
+            //在以后的解析中使用
             parser.setVariables(defaults);
+            //全局的配置应该就齐全了
             configuration.setVariables(defaults);
         }
     }
@@ -575,6 +576,7 @@ public class XMLConfigBuilder extends BaseBuilder {
                 if ("package".equals(child.getName())) {
                     //自动扫描包下所有映射器
                     String mapperPackage = child.getStringAttribute("name");
+                    //在添加的时候会进行解析
                     configuration.addMappers(mapperPackage);
                 } else {
                     String resource = child.getStringAttribute("resource");
@@ -606,7 +608,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         }
     }
 
-    //比较id和environment是否相等
+    //比较id和environment是否相等，比较是是否是需要的数据库
     private boolean isSpecifiedEnvironment(String id) {
         if (environment == null) {
             throw new BuilderException("No environment specified.");

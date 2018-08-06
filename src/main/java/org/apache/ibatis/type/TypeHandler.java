@@ -19,11 +19,6 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-/**
- * @author Clinton Begin
- */
-
 /**
  * 类型处理器
  * 
@@ -39,7 +34,7 @@ public interface TypeHandler<T> {
   //取得结果,供普通select用 根据结果列的索引取
   T getResult(ResultSet rs, int columnIndex) throws SQLException;
 
-  //取得结果,供SP用
+  //取得结果,供stored procedures处理
   T getResult(CallableStatement cs, int columnIndex) throws SQLException;
 
 }

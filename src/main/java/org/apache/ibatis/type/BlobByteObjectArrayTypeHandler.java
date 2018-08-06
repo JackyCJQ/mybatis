@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.sql.*;
 
 /**
+ * 大的数据
  * @author Clinton Begin
  */
 public class BlobByteObjectArrayTypeHandler extends BaseTypeHandler<Byte[]> {

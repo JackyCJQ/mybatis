@@ -42,7 +42,9 @@ public class DefaultParameterHandler implements ParameterHandler {
     private final MappedStatement mappedStatement;
     //参数
     private final Object parameterObject;
+    //对应的sql
     private BoundSql boundSql;
+    //全局的配置文件
     private Configuration configuration;
 
     public DefaultParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
@@ -89,7 +91,7 @@ public class DefaultParameterHandler implements ParameterHandler {
                     TypeHandler typeHandler = parameterMapping.getTypeHandler();
                     JdbcType jdbcType = parameterMapping.getJdbcType();
                     if (value == null && jdbcType == null) {
-                        //不同类型的set方法不同，所以委派给子类的setParameter方法
+                        //不管是数据为null,还是jdbc为Null,设置的时候需要数据库自适应
                         jdbcType = configuration.getJdbcTypeForNull();
                     }
                     typeHandler.setParameter(ps, i + 1, value, jdbcType);

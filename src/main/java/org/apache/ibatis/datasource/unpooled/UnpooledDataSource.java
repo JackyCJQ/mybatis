@@ -25,12 +25,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-
-/**
- * @author Clinton Begin
- * @author Eduardo Macarron
- */
-
 /**
  * 没有线程池化的数据源
  */

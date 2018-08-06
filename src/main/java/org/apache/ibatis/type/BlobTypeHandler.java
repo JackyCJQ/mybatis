@@ -19,6 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.sql.*;
 
 /**
+ * 对于基本类型的byte[]类型的处理
+ * 二进制大对象
  * @author Clinton Begin
  */
 public class BlobTypeHandler extends BaseTypeHandler<byte[]> {
@@ -36,6 +38,7 @@ public class BlobTypeHandler extends BaseTypeHandler<byte[]> {
     Blob blob = rs.getBlob(columnName);
     byte[] returnValue = null;
     if (null != blob) {
+        //偏移量+length
       returnValue = blob.getBytes(1, (int) blob.length());
     }
     return returnValue;
