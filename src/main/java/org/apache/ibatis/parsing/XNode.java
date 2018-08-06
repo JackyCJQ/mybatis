@@ -82,20 +82,23 @@ public class XNode {
         return builder.toString();
     }
 
-    //取得标示符   ("resultMap[authorResult]")
-    //XMLMapperBuilder.resultMapElement调用
-//	<resultMap id="authorResult" type="Author">
-//	  <id property="id" column="author_id"/>
-//	  <result property="username" column="author_username"/>
-//	  <result property="password" column="author_password"/>
-//	  <result property="email" column="author_email"/>
-//	  <result property="bio" column="author_bio"/>
-//	</resultMap>
+    /**
+     * 如果resultMap没有指定ID，则生成一个ID
+     * <resultMap id="authorResult" type="Author">
+     *	  <id property="id" column="author_id"/>
+     *	  <result property="username" column="author_username"/>
+     *	  <result property="password" column="author_password"/>
+     *	  <result property="email" column="author_email"/>
+     *	  <result property="bio" column="author_bio"/>
+     *	</resultMap>
+     * @return resultMap[aa_bb]形式
+     */
+
     public String getValueBasedIdentifier() {
         StringBuilder builder = new StringBuilder();
         XNode current = this;
         while (current != null) {
-            //出了第一次遍历，其他的都需要加_
+            //除了第一次遍历，其他的都需要加_
             if (current != this) {
                 builder.insert(0, "_");
             }

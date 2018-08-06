@@ -24,11 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-/**
- * @author Clinton Begin
- */
-
 /**
  * 结果映射
  * <resultmap></resultmap>中设置的pojo和数据库中的列的对应关系

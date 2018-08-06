@@ -89,7 +89,6 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
 
     /**
-     *
      * @param namespace 引用的另一个mapper的namespace
      * @return
      */
@@ -112,13 +111,24 @@ public class MapperBuilderAssistant extends BaseBuilder {
         }
     }
 
+    /**
+     * 创建一个新的缓存
+     *
+     * @param typeClass     缓存的实现类
+     * @param evictionClass 缓存的算法
+     * @param flushInterval 刷新间隔
+     * @param size          缓存的数量
+     * @param readWrite     是否只读
+     * @param blocking      是否是阻塞的
+     * @param props         配置的第三方框架的其他属性
+     * @return
+     */
     public Cache useNewCache(Class<? extends Cache> typeClass, Class<? extends Cache> evictionClass,
                              Long flushInterval, Integer size, boolean readWrite, boolean blocking, Properties props) {
-        //这里面又判断了一下是否为null就用默认值，有点和XMLMapperBuilder.cacheElement逻辑重复了
-        //缓存的类以及缓存的算法
+        //如果没有配置，则都去默认的实现
         typeClass = valueOrDefault(typeClass, PerpetualCache.class);
         evictionClass = valueOrDefault(evictionClass, LruCache.class);
-        //调用CacheBuilder构建cache,id=currentNamespace
+        //builder模式构建一个新的缓存
         Cache cache = new CacheBuilder(currentNamespace)
                 .implementation(typeClass)
                 .addDecorator(evictionClass)
@@ -130,7 +140,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
                 .build();
         //加入缓存
         configuration.addCache(cache);
-        //当前的缓存
+        //设置为当前的缓存
         currentCache = cache;
         return cache;
     }
@@ -390,23 +400,42 @@ public class MapperBuilderAssistant extends BaseBuilder {
         statementBuilder.timeout(timeout);
     }
 
+    /**
+     * @param resultType      映射的Java类
+     * @param property        Java类的属性的名字
+     * @param column          数据库列名或者是别名
+     * @param javaType        Java类的属性的类型
+     * @param jdbcType        数据库列的类型
+     * @param nestedSelect    嵌套select查询 对应的方法ID
+     * @param nestedResultMap 是否内部有嵌套的resultmap
+     * @param notNullColumn   不为空的列
+     * @param columnPrefix    列名的前缀
+     * @param typeHandler     类型处理器
+     * @param flags           是否是ID 是否是构造函数
+     * @param resultSet       结果集类型
+     * @param foreignColumn   外建
+     * @param lazy            是否懒加载
+     * @return
+     */
     //构建ResultMapping 每个resultMap就对应一条
     public ResultMapping buildResultMapping(
-            Class<?> resultType ,//对应pojo的类型 也就是resultMap相匹配的
-            String property, //pojo的属性名字
-            String column, //数据库列的名字
+            Class<?> resultType,
+            String property,
+            String column,
             Class<?> javaType,
             JdbcType jdbcType,
-            String nestedSelect,//嵌套查询的ID
-            String nestedResultMap,//嵌套的map
-            String notNullColumn, //非空的列
-            String columnPrefix, //前缀
+            String nestedSelect,
+            String nestedResultMap,
+            String notNullColumn,
+            String columnPrefix,
             Class<? extends TypeHandler<?>> typeHandler,
-            List<ResultFlag> flags,//结果标记 是否是ID 是否是构造函数
+            List<ResultFlag> flags,
             String resultSet,
-            String foreignColumn,//外剑
-            boolean lazy) {//是否是懒加载
+            String foreignColumn,
+            boolean lazy) {
+        //Java类属性的类型
         Class<?> javaTypeClass = resolveResultJavaType(resultType, property, javaType);
+        //如果没有显示配置类型处理器，则根据Java属性类型寻找合适的类型处理器
         TypeHandler<?> typeHandlerInstance = resolveTypeHandler(javaTypeClass, typeHandler);
         //解析复合的列名,一般用不到，返回的是空
         List<ResultMapping> composites = parseCompositeColumnName(column);
@@ -445,7 +474,11 @@ public class MapperBuilderAssistant extends BaseBuilder {
         return columns;
     }
 
-    //解析复合列名，即列名由多个组成，可以先忽略
+    /**
+     * 解析复合列名，即列名由多个组成，可以先忽略
+     * @param columnName
+     * @return
+     */
     private List<ResultMapping> parseCompositeColumnName(String columnName) {
         List<ResultMapping> composites = new ArrayList<ResultMapping>();
         if (columnName != null && (columnName.indexOf('=') > -1 || columnName.indexOf(',') > -1)) {
@@ -460,6 +493,13 @@ public class MapperBuilderAssistant extends BaseBuilder {
         return composites;
     }
 
+    /**
+     * 解析Java属性的类型
+     * @param resultType 映射的java类
+     * @param property   Java类属性的名字
+     * @param javaType   Java类属性的类型
+     * @return
+     */
     private Class<?> resolveResultJavaType(Class<?> resultType, String property, Class<?> javaType) {
         if (javaType == null && property != null) {
             try {

@@ -28,8 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 /**
- * 构建器的基类，建造者模式
- * 各种配置，解析文件的基类，主要保持引用全局配置，类型别名和类型处理器。
+ * 所有文件解析的父类  builder模式
  */
 public abstract class BaseBuilder {
     //全局配置
@@ -202,6 +201,7 @@ public abstract class BaseBuilder {
     }
 
     /**
+     * 根据Java属性类型 查找对应的类型处理器
      * @param javaType
      * @param typeHandlerType
      * @return
