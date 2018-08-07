@@ -140,17 +140,18 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     @Override
     public List<Object> handleResultSets(Statement stmt) throws SQLException {
         ErrorContext.instance().activity("handling results").object(mappedStatement.getId());
-
         final List<Object> multipleResults = new ArrayList<Object>();
-
+        //结果集的数量
         int resultSetCount = 0;
+        //包装结果接 封装返回结果的一些详细信息
         ResultSetWrapper rsw = getFirstResultSet(stmt);
 
-        //得到定义的esultMap
+        //得到定义的resultMap
         List<ResultMap> resultMaps = mappedStatement.getResultMaps();
-        //一般resultMaps里只有一个元素
+        //
         int resultMapCount = resultMaps.size();
         validateResultMapsCount(rsw, resultMapCount);
+
         while (rsw != null && resultMapCount > resultSetCount) {
             ResultMap resultMap = resultMaps.get(resultSetCount);
             handleResultSet(rsw, resultMap, multipleResults, null);
@@ -177,6 +178,13 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         return collapseSingleResultList(multipleResults);
     }
 
+    /**
+     * 包装一下结果集
+     *
+     * @param stmt
+     * @return
+     * @throws SQLException
+     */
     private ResultSetWrapper getFirstResultSet(Statement stmt) throws SQLException {
         ResultSet rs = stmt.getResultSet();
         //HSQLDB2.1特殊情况处理
@@ -226,6 +234,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         ancestorColumnPrefix.clear();
     }
 
+    /**
+     * 是否有对应的resultMap
+     *
+     * @param rsw
+     * @param resultMapCount
+     */
     private void validateResultMapsCount(ResultSetWrapper rsw, int resultMapCount) {
         if (rsw != null && resultMapCount < 1) {
             throw new ExecutorException("A query was run and no Result Maps were found for the Mapped Statement '" + mappedStatement.getId()
