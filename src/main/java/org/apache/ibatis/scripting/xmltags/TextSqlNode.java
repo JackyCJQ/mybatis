@@ -21,11 +21,6 @@ import org.apache.ibatis.scripting.ScriptingException;
 import org.apache.ibatis.type.SimpleTypeRegistry;
 
 import java.util.regex.Pattern;
-
-/**
- * @author Clinton Begin
- */
-
 /**
  * 文本SQL节点（CDATA|TEXT）
  *

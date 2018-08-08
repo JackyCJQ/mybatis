@@ -22,11 +22,6 @@ import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.session.Configuration;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-/**
- * @author Frank D. Martinez [mnesarco]
- */
-
 /**
  * XML include转换器
  *
@@ -53,7 +48,7 @@ public class XMLIncludeTransformer {
       //单独解析<include refid="userColumns"/>
       //拿到SQL片段
       Node toInclude = findSqlFragment(getStringAttribute(source, "refid"));
-      //递归调用自己,应用上?
+      //递归调用自己,看是否还存在<include><include></include></include>
       applyIncludes(toInclude);
       //总之下面就是将字符串拼接进来，看不懂。。。
       if (toInclude.getOwnerDocument() != source.getOwnerDocument()) {
@@ -64,7 +59,9 @@ public class XMLIncludeTransformer {
         toInclude.getParentNode().insertBefore(toInclude.getFirstChild(), toInclude);
       }
       toInclude.getParentNode().removeChild(toInclude);
-    } else if (source.getNodeType() == Node.ELEMENT_NODE) {
+    }
+     //取得 set,choose等子节点，看子节点中是否存在<include>
+    else if (source.getNodeType() == Node.ELEMENT_NODE) {
         //一开始会走这段，取得所有儿子
       NodeList children = source.getChildNodes();
       for (int i=0; i<children.getLength(); i++) {

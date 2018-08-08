@@ -127,7 +127,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     //这就使得在获取嵌套的结果集的时候不至于导致内存不够用。默认值：false。 
     boolean resultOrdered = context.getBooleanAttribute("resultOrdered", false);
 
-    //解析之前先解析<include>SQL片段 如果里面有${}这种 就一并解析了
+    //解析之前先替换<include>SQL片段
     XMLIncludeTransformer includeParser = new XMLIncludeTransformer(configuration, builderAssistant);
     includeParser.applyIncludes(context.getNode());
 
@@ -138,6 +138,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     // Parse the SQL (pre: <selectKey> and <include> were parsed and removed)
     //解析成SqlSource，一般是DynamicSqlSource
     SqlSource sqlSource = langDriver.createSqlSource(configuration, context, parameterTypeClass);
+
 
     String resultSets = context.getStringAttribute("resultSets");
     //(仅对 insert 有用) 标记一个属性, MyBatis 会通过 getGeneratedKeys 或者通过 insert 语句的 selectKey 子元素设置它的值

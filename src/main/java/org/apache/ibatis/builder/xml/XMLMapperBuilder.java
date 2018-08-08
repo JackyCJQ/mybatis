@@ -400,6 +400,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         //如果没有指定ID 会生成一个唯一标识符来代替ID
         String id = resultMapNode.getStringAttribute("id", resultMapNode.getValueBasedIdentifier());
         //resultMap-->type，connection-->ofType associate-->resultye
+        //得到对应映射的pojo类
         String type = resultMapNode.getStringAttribute("type",
                 resultMapNode.getStringAttribute("ofType", resultMapNode.getStringAttribute("resultType", resultMapNode.getStringAttribute("javaType"))));
         /**
@@ -489,7 +490,9 @@ public class XMLMapperBuilder extends BaseBuilder {
         @SuppressWarnings("unchecked")
         Class<? extends TypeHandler<?>> typeHandlerClass = (Class<? extends TypeHandler<?>>) resolveClass(typeHandler);
         JdbcType jdbcTypeEnum = resolveJdbcType(jdbcType);
+
         Map<String, String> discriminatorMap = new HashMap<String, String>();
+        //遍历每一种情况
         for (XNode caseChild : context.getChildren()) {
             String value = caseChild.getStringAttribute("value");
             String resultMap = caseChild.getStringAttribute("resultMap", processNestedResultMappings(caseChild, resultMappings));
@@ -566,17 +569,24 @@ public class XMLMapperBuilder extends BaseBuilder {
         String property = context.getStringAttribute("property");
         //对应数据库的列名
         String column = context.getStringAttribute("column");
+        //java中属性的具体类型
         String javaType = context.getStringAttribute("javaType");
+        //对应处理的jdbc类型
         String jdbcType = context.getStringAttribute("jdbcType");
+        //是否有嵌套的查询
         String nestedSelect = context.getStringAttribute("select");
         //处理嵌套的resultmap Java中的构造参数可能为pojo，也对应一个resultMap
         String nestedResultMap = context.getStringAttribute("resultMap",
                 //如果是内部嵌套一个resultMap,则继续解析，返回一个resultMap的ID，否则返回null
                 processNestedResultMappings(context, Collections.<ResultMapping>emptyList()));
+        //非空的列
         String notNullColumn = context.getStringAttribute("notNullColumn");
         String columnPrefix = context.getStringAttribute("columnPrefix");
+        //类型处理器
         String typeHandler = context.getStringAttribute("typeHandler");
+        //结果集
         String resulSet = context.getStringAttribute("resultSet");
+        //外键
         String foreignColumn = context.getStringAttribute("foreignColumn");
         //判断是否是懒加载
         boolean lazy = "lazy".equals(context.getStringAttribute("fetchType", configuration.isLazyLoadingEnabled() ? "lazy" : "eager"));
