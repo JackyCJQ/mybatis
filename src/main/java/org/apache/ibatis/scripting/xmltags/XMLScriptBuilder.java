@@ -35,7 +35,9 @@ import java.util.Map;
 public class XMLScriptBuilder extends BaseBuilder {
 
     private XNode context;
+    //是否是动态的创建
     private boolean isDynamic;
+    //参数的类型
     private Class<?> parameterType;
 
     public XMLScriptBuilder(Configuration configuration, XNode context) {
@@ -63,9 +65,11 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     List<SqlNode> parseDynamicTags(XNode node) {
         List<SqlNode> contents = new ArrayList<SqlNode>();
+        //获取地下所有的字节点
         NodeList children = node.getNode().getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             XNode child = node.newXNode(children.item(i));
+            //如果是文本类型的
             if (child.getNode().getNodeType() == Node.CDATA_SECTION_NODE || child.getNode().getNodeType() == Node.TEXT_NODE) {
                 String data = child.getStringBody("");
                 TextSqlNode textSqlNode = new TextSqlNode(data);

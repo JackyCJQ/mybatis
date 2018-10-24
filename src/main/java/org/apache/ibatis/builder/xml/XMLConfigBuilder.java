@@ -120,19 +120,19 @@ public class XMLConfigBuilder extends BaseBuilder {
         parsed = true;
         /** 一个简单的配置文件
          <configuration>
-         <environments default="development">
-         <environment id="development">
-         <transactionManager type="JDBC"/>
-         <dataSource type="POOLED">
-         <property name="driver" value="${driver}"/>
-         <property name="url" value="${url}"/>
-         <property name="username" value="${username}"/>
-         <property name="password" value="${password}"/>
-         </dataSource>
-         </environment>
+             <environments default="development">
+                 <environment id="development">
+                 <transactionManager type="JDBC"/>
+                <dataSource type="POOLED">
+                    <property name="driver" value="${driver}"/>
+                    <property name="url" value="${url}"/>
+                    <property name="username" value="${username}"/>
+                    <property name="password" value="${password}"/>
+                </dataSource>
+             </environment>
          </environments>
          <mappers>
-         <mapper resource="org/mybatis/example/BlogMapper.xml"/>
+             <mapper resource="org/mybatis/example/BlogMapper.xml"/>
          </mappers>
          </configuration>
          */

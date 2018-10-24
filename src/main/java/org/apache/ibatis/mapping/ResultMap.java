@@ -22,6 +22,7 @@ import java.util.*;
 /**
  * 结果映射
  * MyBatis 中最重要最强大的元素
+ * 每个<resultMap></resultMap>对应一个
  */
 public class ResultMap {
   private String id;

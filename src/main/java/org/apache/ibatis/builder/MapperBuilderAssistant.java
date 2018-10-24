@@ -449,7 +449,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
         //构建result map
         ResultMapping.Builder builder = new ResultMapping.Builder(configuration, property, column, javaTypeClass);
         builder.jdbcType(jdbcType);
+        //嵌套查询的id
         builder.nestedQueryId(applyCurrentNamespace(nestedSelect, true));
+        //嵌套结果集的id
         builder.nestedResultMapId(applyCurrentNamespace(nestedResultMap, true));
         builder.resultSet(resultSet);
         builder.typeHandler(typeHandlerInstance);

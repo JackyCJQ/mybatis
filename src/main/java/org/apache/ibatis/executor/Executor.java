@@ -33,41 +33,130 @@ public interface Executor {
 
     ResultHandler NO_RESULT_HANDLER = null;
 
-    //更新
+    /**
+     * 更新操作
+     *
+     * @param ms
+     * @param parameter
+     * @return
+     * @throws SQLException
+     */
     int update(MappedStatement ms, Object parameter) throws SQLException;
 
-    //查询，带分页，带缓存，BoundSql
+    /**
+     * 查询操作
+     *
+     * @param ms
+     * @param parameter
+     * @param rowBounds
+     * @param resultHandler
+     * @param cacheKey
+     * @param boundSql
+     * @param <E>
+     * @return
+     * @throws SQLException
+     */
     <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException;
 
-    //查询，带分页
+    /**
+     * 查询操作
+     *
+     * @param ms
+     * @param parameter
+     * @param rowBounds
+     * @param resultHandler
+     * @param <E>
+     * @return
+     * @throws SQLException
+     */
     <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException;
 
-    //刷新批处理语句
+    /**
+     * 批量刷新操作
+     *
+     * @return
+     * @throws SQLException
+     */
     List<BatchResult> flushStatements() throws SQLException;
 
-    //提交和回滚，参数是是否要强制
+    /**
+     * 提交操作
+     *
+     * @param required
+     * @throws SQLException
+     */
     void commit(boolean required) throws SQLException;
 
+    /**
+     * 回滚操作
+     *
+     * @param required
+     * @throws SQLException
+     */
     void rollback(boolean required) throws SQLException;
 
-    //创建CacheKey
+    /**
+     * 创建缓存key
+     *
+     * @param ms
+     * @param parameterObject
+     * @param rowBounds
+     * @param boundSql
+     * @return
+     */
     CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql);
 
-    //判断是否缓存了
+    /**
+     * 是否存在缓存
+     *
+     * @param ms
+     * @param key
+     * @return
+     */
     boolean isCached(MappedStatement ms, CacheKey key);
 
-    //清理Session缓存
+    /**
+     * 清理缓存
+     */
     void clearLocalCache();
 
-    //延迟加载
+    /**
+     * 延迟加载
+     *
+     * @param ms
+     * @param resultObject
+     * @param property
+     * @param key
+     * @param targetType
+     */
     void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class<?> targetType);
 
+    /**
+     * 获取事务
+     *
+     * @return
+     */
     Transaction getTransaction();
 
+    /**
+     * 关闭执行器
+     *
+     * @param forceRollback
+     */
     void close(boolean forceRollback);
 
+    /**
+     * 是否是关闭状态
+     *
+     * @return
+     */
     boolean isClosed();
 
+    /**
+     * 封装执行器
+     *
+     * @param executor
+     */
     void setExecutorWrapper(Executor executor);
 
 }
