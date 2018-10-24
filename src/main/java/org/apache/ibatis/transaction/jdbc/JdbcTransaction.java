@@ -51,6 +51,10 @@ public class JdbcTransaction implements Transaction {
     //是否自动提交
     protected boolean autoCommmit;
 
+
+    /**
+     * 以下就是两种构造jdbc事务的方式
+     */
     public JdbcTransaction(DataSource ds, TransactionIsolationLevel desiredLevel, boolean desiredAutoCommit) {
         dataSource = ds;
         level = desiredLevel;

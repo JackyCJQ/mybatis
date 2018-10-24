@@ -61,7 +61,7 @@ public class MapperRegistry {
     }
 
     /**
-     * 注册一个接口
+     * 如果配置文件中是通过接口的方式来进行注册
      * @param type
      * @param <T>
      */
@@ -73,7 +73,7 @@ public class MapperRegistry {
             }
             boolean loadCompleted = false;
             try {
-                //动态代理的实现，默认给每个接口生成对应的代理
+                //动态代理的实现，默认给每个接口生成一个代理工厂
                 knownMappers.put(type, new MapperProxyFactory<T>(type));
                 //解析接口上添加的注解信息
                 MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
@@ -117,7 +117,7 @@ public class MapperRegistry {
     /**
      * @since 3.2.2
      */
-    //查找包下所有类 默认父类为Object.class
+    //查找包下所有类 默认父类为Object.class，所有的类默认父类就是Object
     public void addMappers(String packageName) {
         addMappers(packageName, Object.class);
     }

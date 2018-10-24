@@ -9,15 +9,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Simple blocking decorator
- * <p>
- * Sipmle and inefficient version of EhCache's BlockingCache decorator.
- * It sets a lock over a cache key when the element is not found in cache.
- * This way, other threads will wait until this element is filled instead of hitting the database.
- *
- * @author Eduardo Macarron
- */
+
 public class BlockingCache implements Cache {
     //设置阻塞时等待的时间
     private long timeout;
@@ -41,26 +33,29 @@ public class BlockingCache implements Cache {
         return delegate.getSize();
     }
 
+    /**
+     * 放入的时候可以没有限制，只是取的时候不存在会阻塞
+     */
     @Override
     public void putObject(Object key, Object value) {
         try {
             delegate.putObject(key, value);
         } finally {
+            //每个key对应锁，减小锁的粒度
             releaseLock(key);
         }
     }
 
     @Override
     public Object getObject(Object key) {
-        //这样设计就是 当前线程如果没有获取到缓存 就会一直持有这把锁
-        // 其他在想要获取 就阻塞了
-        //当放入缓存时 也会释放这把锁，所以其他的就可以在此获取了
+        //先获取锁，如果获取不到说明不存在缓存
         acquireLock(key);
         Object value = delegate.getObject(key);
         //取到缓存时 就释放锁
         if (value != null) {
             releaseLock(key);
         }
+        //如果确实取到为null会不会永久不会释放锁了？
         return value;
     }
 

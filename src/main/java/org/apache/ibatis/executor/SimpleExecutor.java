@@ -42,7 +42,7 @@ public class SimpleExecutor extends BaseExecutor {
   /**
    * ms是详细的sql语句 parameter是参数
    * @param ms
-   * @param parameter
+   * @param parameter 应该是一个map
    * @return
    * @throws SQLException
    */

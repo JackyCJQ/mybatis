@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * 对于字节数组类型的数据 这种类型的数据一般都比较小
  * @author Clinton Begin
  */
 public class ByteArrayTypeHandler extends BaseTypeHandler<byte[]> {

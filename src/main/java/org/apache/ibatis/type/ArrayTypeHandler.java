@@ -28,6 +28,8 @@ public class ArrayTypeHandler extends BaseTypeHandler<Object> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType) throws SQLException {
+    //知道具体的类型 就不用设置 ps.setObject(i,parameter,jdbcType.TYPE_CODE);
+    //直接设置对应的具体的类型就好
     ps.setArray(i, (Array) parameter);
   }
 

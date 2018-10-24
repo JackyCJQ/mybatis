@@ -22,6 +22,7 @@ import org.apache.ibatis.cache.Cache;
  *
  */
 public class CacheRefResolver {
+  //每个mapper配置文件的助手类
   private final MapperBuilderAssistant assistant;
   //引用的缓存索引
   private final String cacheRefNamespace;

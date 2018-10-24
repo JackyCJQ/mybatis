@@ -47,6 +47,7 @@ public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
   @Override
   public E getNullableResult(ResultSet rs, String columnName) throws SQLException {
     String s = rs.getString(columnName);
+    //通过静态方法在转化为咩枚举类型
     return s == null ? null : Enum.valueOf(type, s);
   }
 

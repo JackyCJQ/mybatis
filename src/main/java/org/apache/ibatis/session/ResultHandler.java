@@ -17,14 +17,14 @@ package org.apache.ibatis.session;
 
 /**
  * 结果处理器
- * 
  */
 public interface ResultHandler {
 
-  /**
-   * 一次处理没一个结果
-   * @param context
-   */
-  void handleResult(ResultContext context);
+    /**
+     * 开始处理结果
+     *
+     * @param context 结果集的上下文
+     */
+    void handleResult(ResultContext context);
 
 }

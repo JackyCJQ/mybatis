@@ -49,9 +49,9 @@ public class XMLConfigBuilder extends BaseBuilder {
 
     //是否已解析 默认只解析一遍配置文件
     private boolean parsed;
-    //XPath解析器，解析xml 文档的核心
+    //XPath解析器，解析xml文档的核心
     private XPathParser parser;
-    //每个配置文件解析 对应一个数据库环境
+    //对应的数据库环境 可以配置多个数据库环境
     private String environment;
 
     /**
@@ -96,11 +96,11 @@ public class XMLConfigBuilder extends BaseBuilder {
      * @param props
      */
     private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
-        //在此处最先声明全局配置
+        //在此处最先声明全局配置，做一些初始化的工作
         super(new Configuration());
-        //清空错误的上下午 用来表示在解析过程中是否存在错误
+        //清空错误的上下文 用来表示在解析过程中是否存在错误
         ErrorContext.instance().resource("SQL Mapper Configuration");
-        //是否存在用户自己引入的配置文件 通过和spring整合时引入的配置文件 应该会整合到这里
+        //是否存在用户自己引入的配置文件 通过和spring整合时引入的配置文件
         this.configuration.setVariables(props);
         this.parsed = false;
         this.environment = environment;
@@ -191,23 +191,23 @@ public class XMLConfigBuilder extends BaseBuilder {
     private void typeAliasesElement(XNode parent) {
         if (parent != null) {
             for (XNode child : parent.getChildren()) {
-                //如果是package
+                //如果是package扫描配置
                 if ("package".equals(child.getName())) {
                     String typeAliasPackage = child.getStringAttribute("name");
                     //去包下找所有类,然后注册别名(有@Alias注解则用，没有则取类的simpleName)
                     configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
                 } else {
-                    //如果是typeAlias
+                    //如果是typeAlias单个配置
                     String alias = child.getStringAttribute("alias");
                     String type = child.getStringAttribute("type");
                     try {
                         //反射加载
                         Class<?> clazz = Resources.classForName(type);
                         if (alias == null) {
-                            //如果配有注解，则会取注解的名字
+                            //如果配有注解，则会取注解的名字，没有则取类的simpleName
                             typeAliasRegistry.registerAlias(clazz);
                         } else {
-                            //取自定义的别名
+                            //取在配置时的自定义的别名
                             typeAliasRegistry.registerAlias(alias, clazz);
                         }
                     } catch (ClassNotFoundException e) {
@@ -231,6 +231,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         if (parent != null) {
             for (XNode child : parent.getChildren()) {
                 String interceptor = child.getStringAttribute("interceptor");
+                //插件下面配置的一些属性
                 Properties properties = child.getChildrenAsProperties();
                 //继承 Interceptor 并动态初始化一个实例
                 Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
@@ -252,7 +253,6 @@ public class XMLConfigBuilder extends BaseBuilder {
         if (context != null) {
             String type = context.getStringAttribute("type");
             Properties properties = context.getChildrenAsProperties();
-            //这里没有定义一个接口吗？怎么统一调用呢？
             //public class ExampleObjectFactory extends DefaultObjectFactory需要继承这个类
             ObjectFactory factory = (ObjectFactory) resolveClass(type).newInstance();
             factory.setProperties(properties);
@@ -261,7 +261,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         }
     }
 
-    //5.对象包装工厂
+    //5.对象包装工厂 这个好像用的不是很多
     private void objectWrapperFactoryElement(XNode context) throws Exception {
         if (context != null) {
             String type = context.getStringAttribute("type");
@@ -277,32 +277,33 @@ public class XMLConfigBuilder extends BaseBuilder {
      * <property name="username" value="dev_user"/>
      * <property name="password" value="F2Fa3!33TYyg"/>
      * </properties>
-     * 生效的顺序应该是 自己引用的外部变量>resource指定路径里面的>配置文件里面的定义的
+     * 生效的顺序应该是 自己引用的外部变量>resource指定路径里面的><properties></properties>里面定义的属性
      */
     private void propertiesElement(XNode context) throws Exception {
         if (context != null) {
             Properties defaults = context.getChildrenAsProperties();
+            //加载外部的properties文件
             String resource = context.getStringAttribute("resource");
             String url = context.getStringAttribute("url");
             //配置properties时 只能配置resource url中的一种
             if (resource != null && url != null) {
                 throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
             }
-            //即洗properties类型的文件
+            //配置文件里面的配置会覆盖声明的子配置
             if (resource != null) {
                 defaults.putAll(Resources.getResourceAsProperties(resource));
             } else if (url != null) {
                 defaults.putAll(Resources.getUrlAsProperties(url));
             }
-            //最初定义的变量
+            //最初定义的变量优先级最高 其次是外部配置文件里面的配置，最后是xml中声明的配置
             Properties vars = configuration.getVariables();
             if (vars != null) {
                 //这里会覆盖之前写的配置
                 defaults.putAll(vars);
             }
-            //在以后的解析中使用
+            //在后续解析的时候会用到
             parser.setVariables(defaults);
-            //全局的配置应该就齐全了
+            //更新全局配置文件
             configuration.setVariables(defaults);
         }
     }
@@ -327,6 +328,7 @@ public class XMLConfigBuilder extends BaseBuilder {
      */
     private void settingsElement(XNode context) throws Exception {
         if (context != null) {
+            //获取下面所有配置的属性
             Properties props = context.getChildrenAsProperties();
             //检查下是否在Configuration类里都有相应的setter方法 检查name中写的设置是否有拼写错误
             MetaClass metaConfig = MetaClass.forClass(Configuration.class);
@@ -402,23 +404,26 @@ public class XMLConfigBuilder extends BaseBuilder {
     private void environmentsElement(XNode context) throws Exception {
         if (context != null) {
             if (environment == null) {
-                //如果之前没有配置过则使用default配置的
+                //如果初始化的时候没有配置使用的数据环境，则使用配置文件中，default配置的
                 environment = context.getStringAttribute("default");
             }
+            //可能会配置多个数据源，循环解析每个数据源
             for (XNode child : context.getChildren()) {
+                //获取每个配置的数据源的ID
                 String id = child.getStringAttribute("id");
-                //循环比较解析的environment是否就是指定的 如果不是的话 就不用解析了
+                //说明一个environments标签可以配置多个environment，可以配置一个测试的和一个生产的
                 if (isSpecifiedEnvironment(id)) {
-                    //事务管理器
+                    //与数据环境相关的 就是  数据环境和事务
+                    //多个session查询同时进行，需要一个工厂来提供对应的数据环境和事务
                     TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
-                    //数据源工厂
                     DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
+
                     DataSource dataSource = dsFactory.getDataSource();
                     //builder模式创建
                     Environment.Builder environmentBuilder = new Environment.Builder(id)
                             .transactionFactory(txFactory)
                             .dataSource(dataSource);
-                    //就是设置一个environment
+                    //就是设置一个environment 里面包含datasource和transaction
                     configuration.setEnvironment(environmentBuilder.build());
                 }
             }
@@ -500,7 +505,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         throw new BuilderException("Environment declaration requires a DataSourceFactory.");
     }
 
-    //类型处理器
+    //类型处理，一般会在ExampleTypeHandler上进行注解的声明
 
     /**
      * <typeHandlers>
@@ -576,13 +581,13 @@ public class XMLConfigBuilder extends BaseBuilder {
                 if ("package".equals(child.getName())) {
                     //自动扫描包下所有映射器
                     String mapperPackage = child.getStringAttribute("name");
-                    //在添加的时候会进行解析
+                    //在添加接口的时候 会自动加载并解析同目录下的.xml配置文件
                     configuration.addMappers(mapperPackage);
                 } else {
                     String resource = child.getStringAttribute("resource");
                     String url = child.getStringAttribute("url");
                     String mapperClass = child.getStringAttribute("class");
-                    //氛围加载xml文件以及接口的方式
+                    //加载xml文件以及接口的方式
                     if (resource != null && url == null && mapperClass == null) {
                         ErrorContext.instance().resource(resource);
                         //根据配置的路径 读取这个xml文件
@@ -598,7 +603,7 @@ public class XMLConfigBuilder extends BaseBuilder {
                     } else if (resource == null && url == null && mapperClass != null) {
                         //10.3使用java类名
                         Class<?> mapperInterface = Resources.classForName(mapperClass);
-                        //直接把配置的接口加入配置
+                        //加入接口的时候 已加载了对应的.xml配置文件
                         configuration.addMapper(mapperInterface);
                     } else {
                         throw new BuilderException("A mapper element may only specify a url, resource or class, but not more than one.");

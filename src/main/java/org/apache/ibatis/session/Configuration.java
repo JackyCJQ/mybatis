@@ -121,7 +121,6 @@ public class Configuration {
 
     //mapper接口注册机
     protected MapperRegistry mapperRegistry = new MapperRegistry(this);
-
     //默认禁用延迟加载
     protected boolean lazyLoadingEnabled = false;
     //代理工厂默认使用java
@@ -164,7 +163,7 @@ public class Configuration {
 
     //不完整的SQL语句
     protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<XMLStatementBuilder>();
-    //缓存引用另一个缓存有问题的缓存
+    //缓存引用另一个缓存中 出现了问题
     protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<CacheRefResolver>();
     //返回结果map的解析
     protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<ResultMapResolver>();
@@ -181,7 +180,7 @@ public class Configuration {
     protected final Map<String, String> cacheRefMap = new HashMap<String, String>();
 
 
-    //可能根据不同的环境 对饮不同的配置
+    //可能根据不同的环境 对应不同的配置
     public Configuration(Environment environment) {
         this();
         this.environment = environment;
@@ -189,14 +188,14 @@ public class Configuration {
 
     //在解析全局配置文件的时候创建的
     public Configuration() {
-        //注册更多的类型别名，至于为何不直接在TypeAliasRegistry里注册，还需进一步研究
+        //对于事务来说 mybatis中就两种 jdbch和MANAGED
         typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
         typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);
-
+        //对于数据源来说 就一以下三种JNDI，POOLED，UNPOOLED
         typeAliasRegistry.registerAlias("JNDI", JndiDataSourceFactory.class);
         typeAliasRegistry.registerAlias("POOLED", PooledDataSourceFactory.class);
         typeAliasRegistry.registerAlias("UNPOOLED", UnpooledDataSourceFactory.class);
-
+        //缓存的算法
         typeAliasRegistry.registerAlias("PERPETUAL", PerpetualCache.class);
         typeAliasRegistry.registerAlias("FIFO", FifoCache.class);
         typeAliasRegistry.registerAlias("LRU", LruCache.class);
@@ -452,6 +451,7 @@ public class Configuration {
 
     /**
      * 获取接口注册器
+     *
      * @since 3.2.2
      */
     public MapperRegistry getMapperRegistry() {
@@ -478,6 +478,7 @@ public class Configuration {
 
     /**
      * 获取所有的过滤器链
+     *
      * @since 3.2.2
      */
     public List<Interceptor> getInterceptors() {
@@ -524,6 +525,7 @@ public class Configuration {
         resultSetHandler = (ResultSetHandler) interceptorChain.pluginAll(resultSetHandler);
         return resultSetHandler;
     }
+
     //创建方法处理器
     public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
         //创建路由选择语句处理器
@@ -532,6 +534,7 @@ public class Configuration {
         statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
         return statementHandler;
     }
+
     //执行器和事务搞在一起
     public Executor newExecutor(Transaction transaction) {
         return newExecutor(transaction, defaultExecutorType);
@@ -603,7 +606,7 @@ public class Configuration {
         return caches.containsKey(id);
     }
 
-     //添加结果集
+    //添加结果集
     public void addResultMap(ResultMap rm) {
         resultMaps.put(rm.getId(), rm);
         checkLocallyForDiscriminatedNestedResultMaps(rm);
@@ -725,7 +728,7 @@ public class Configuration {
         mapperRegistry.addMappers(packageName);
     }
 
-     // 添加一个单独的一个类
+    // 添加一个单独的一个类
     public <T> void addMapper(Class<T> type) {
         mapperRegistry.addMapper(type);
     }
@@ -742,6 +745,7 @@ public class Configuration {
     public boolean hasStatement(String statementName) {
         return hasStatement(statementName, true);
     }
+
     public boolean hasStatement(String statementName, boolean validateIncompleteStatements) {
         if (validateIncompleteStatements) {
             buildAllStatements();
@@ -750,8 +754,7 @@ public class Configuration {
     }
 
     /**
-     *
-     * @param namespace 当前namespace
+     * @param namespace           当前namespace
      * @param referencedNamespace 引用的namespace
      */
     public void addCacheRef(String namespace, String referencedNamespace) {

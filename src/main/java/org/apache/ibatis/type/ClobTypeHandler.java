@@ -19,6 +19,7 @@ import java.io.StringReader;
 import java.sql.*;
 
 /**
+ * 针对文本类型的数据
  * @author Clinton Begin
  */
 public class ClobTypeHandler extends BaseTypeHandler<String> {

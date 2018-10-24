@@ -22,10 +22,11 @@ import java.lang.annotation.Target;
 
 /**
  * 自定义的类型处理 匹配的java类型
+ *
  * @author Eduardo Macarron
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface MappedTypes {
-  public Class<?>[] value();
+    public Class<?>[] value();
 }

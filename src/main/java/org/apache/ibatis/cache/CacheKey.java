@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 缓存key
  * MyBatis 对于其 Key 的生成采取规则为：[mappedStementId + offset + limit + SQL + queryParams + environment]生成一个哈希码
+ * 以上规则才能保证一个唯一的查询
  */
 public class CacheKey implements Cloneable, Serializable {
 
@@ -34,10 +34,13 @@ public class CacheKey implements Cloneable, Serializable {
     private static final int DEFAULT_HASHCODE = 17;
 
     private int multiplier;
+    //每个key都生成唯一的hash值
     private int hashcode;
     //这个是校验
     private long checksum;
+    //更新的数量
     private int count;
+    //[mappedStementId + offset + limit + SQL + queryParams + environment]
     private List<Object> updateList;
 
     public CacheKey() {
@@ -49,7 +52,7 @@ public class CacheKey implements Cloneable, Serializable {
     }
 
     /**
-     * 传入一个Object数组，更新hashcode和效验码
+     * 数组内容：[mappedStementId + offset + limit + SQL + queryParams + environment]
      *
      * @param objects
      */
@@ -58,13 +61,17 @@ public class CacheKey implements Cloneable, Serializable {
         updateAll(objects);
     }
 
-    //返回缓存中更新的数量
+    /**
+     * 生成key的那些变量数量，即 [mappedStementId + offset + limit + SQL + queryParams + environment]
+     *
+     * @return
+     */
     public int getUpdateCount() {
         return updateList.size();
     }
 
     /**
-     * 更新每一个Object
+     * 更新每个：[mappedStementId + offset + limit + SQL + queryParams + environment]
      */
     public void update(Object object) {
         //如果更新的是数组，则循环调用doUpdate
@@ -104,7 +111,8 @@ public class CacheKey implements Cloneable, Serializable {
             update(o);
         }
     }
-     //重写equals方法
+
+    //重写equals方法
     @Override
     public boolean equals(Object object) {
         //判断地址是否是一样的
@@ -133,6 +141,7 @@ public class CacheKey implements Cloneable, Serializable {
         for (int i = 0; i < updateList.size(); i++) {
             Object thisObject = updateList.get(i);
             Object thatObject = cacheKey.updateList.get(i);
+            //最后比较字符串中的内容是否一致
             if (thisObject == null) {
                 if (thatObject != null) {
                     return false;

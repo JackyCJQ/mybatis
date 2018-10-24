@@ -31,7 +31,6 @@ import java.util.List;
  */
 public interface Executor {
 
-    //不需要ResultHandler
     ResultHandler NO_RESULT_HANDLER = null;
 
     //更新

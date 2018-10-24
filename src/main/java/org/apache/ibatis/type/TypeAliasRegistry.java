@@ -107,7 +107,7 @@ public class TypeAliasRegistry {
             if (string == null) {
                 return null;
             }
-            //需要转化为全部小写
+            //需要转化为全部小写 在配置文件的时候可以不用区分大小写
             String key = string.toLowerCase(Locale.ENGLISH);
             Class<T> value;
             //查找是否注册过了
@@ -125,7 +125,7 @@ public class TypeAliasRegistry {
     }
 
     /**
-     * 注册一个报名下的全部类
+     * 注册一个包名下的全部类
      *
      * @param packageName
      */

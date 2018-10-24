@@ -17,7 +17,7 @@ package org.apache.ibatis.cache;
 
 /**
  * Null值缓存key
- * 不会存在对应的更新等操作
+ * 不会存在对应的更新等操作，只起到一个占位的作用
  */
 public final class NullCacheKey extends CacheKey {
 

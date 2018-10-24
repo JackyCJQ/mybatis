@@ -52,7 +52,7 @@ public class MapperProxyFactory<T> {
     }
 
     /**
-     * 生一个接口代理
+     * 生成一个接口代理实现类
      * @param mapperProxy
      * @return
      */
@@ -64,7 +64,7 @@ public class MapperProxyFactory<T> {
     }
 
     /**
-     * 生成一个接口代理
+     * 生成一个接口代理实现类
      * @param sqlSession
      * @return
      */

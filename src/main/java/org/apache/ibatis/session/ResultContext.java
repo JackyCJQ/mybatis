@@ -16,7 +16,7 @@
 package org.apache.ibatis.session;
 
 /**
- * 结果上下文
+ * 获取结果上下文
  */
 public interface ResultContext {
 

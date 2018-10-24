@@ -30,7 +30,7 @@ import org.apache.ibatis.type.TypeHandler;
 import java.util.*;
 
 /**
- * 映射构建器助手，建造者模式,继承BaseBuilder
+ * 映射构建器助手，建造者模式,继承BaseBuilder，全局配置文件定义在BaseBuilder
  */
 public class MapperBuilderAssistant extends BaseBuilder {
 
@@ -43,6 +43,10 @@ public class MapperBuilderAssistant extends BaseBuilder {
     //是否得到引用的缓存
     private boolean unresolvedCacheRef; // issue #676
 
+    /**
+     * @param configuration
+     * @param resource      mapper.xml的详细路径
+     */
     public MapperBuilderAssistant(Configuration configuration, String resource) {
         //调用父类  类型别名 typehandler
         super(configuration);
@@ -98,7 +102,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         }
         try {
             unresolvedCacheRef = true;
-            //获取引用的另一个缓存 Map<String, Cache> caches
+            //获取引用的另一个缓存 ，把它设置为当前缓存
             Cache cache = configuration.getCache(namespace);
             if (cache == null) {
                 throw new IncompleteElementException("No cache for namespace '" + namespace + "' could be found.");
@@ -128,7 +132,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         //如果没有配置，则都去默认的实现
         typeClass = valueOrDefault(typeClass, PerpetualCache.class);
         evictionClass = valueOrDefault(evictionClass, LruCache.class);
-        //builder模式构建一个新的缓存
+        //builder模式构建一个新的缓存 缓存的ID则为当前namespace
         Cache cache = new CacheBuilder(currentNamespace)
                 .implementation(typeClass)
                 .addDecorator(evictionClass)
@@ -476,6 +480,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
     /**
      * 解析复合列名，即列名由多个组成，可以先忽略
+     *
      * @param columnName
      * @return
      */
@@ -495,6 +500,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
     /**
      * 解析Java属性的类型
+     *
      * @param resultType 映射的java类
      * @param property   Java类属性的名字
      * @param javaType   Java类属性的类型

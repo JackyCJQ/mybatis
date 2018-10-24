@@ -27,8 +27,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+
 /**
- * 所有文件解析的父类  builder模式
+ * 配置文件解析的基础类  builder模式
  */
 public abstract class BaseBuilder {
     //全局配置
@@ -51,8 +52,8 @@ public abstract class BaseBuilder {
     /**
      * 解析正则表达式
      *
-     * @param regex
-     * @param defaultValue
+     * @param regex        正则表达式
+     * @param defaultValue 默认值
      * @return
      */
     protected Pattern parseExpression(String regex, String defaultValue) {
@@ -94,7 +95,7 @@ public abstract class BaseBuilder {
     }
 
     /**
-     * 根据名称 解析成对应的jdbc类型
+     * 根据名称 解析成对应的枚举类型
      *
      * @param alias jdbc类型的字符串
      * @return
@@ -111,7 +112,7 @@ public abstract class BaseBuilder {
     }
 
     /**
-     * 根据名称解析ResultSetType
+     * 根据名称解析ResultSetType，获取对应的枚举值
      *
      * @param alias
      * @return FORWARD_ONLY SCROLL_INSENSITIVE  SCROLL_SENSITIVE 中的一个
@@ -128,7 +129,8 @@ public abstract class BaseBuilder {
     }
 
     /**
-     * 根据名字解析ParameterMode类型
+     * 根据名字解析ParameterMode类型，获取对应的枚举值
+     *
      * @param alias
      * @return IN OUT  INOUT 中的一种
      */
@@ -147,6 +149,8 @@ public abstract class BaseBuilder {
      * 根据别名解析Class，然后创建一个无参的实例
      * alias是一个已经注册进类名注册机中的类
      * 或是 完整类名，通过反射创建
+     * 在配置一些外部类的时候，通过此方法进行加载
+     *
      * @param alias typeAliasRegistry中注册的类型别名
      * @return
      */
@@ -165,6 +169,7 @@ public abstract class BaseBuilder {
 
     /**
      * 根据别名查找对应的注册的Class类
+     *
      * @param alias
      * @return
      */
@@ -180,8 +185,9 @@ public abstract class BaseBuilder {
     }
 
     /**
-     * 查找对应的类型处理器
-     * @param javaType java类型
+     * 查找对应的类型处理器，这个是单例的
+     *
+     * @param javaType         java类型
      * @param typeHandlerAlias 注册的类型处理器别名（这个时必须的）
      * @return
      */
@@ -202,6 +208,7 @@ public abstract class BaseBuilder {
 
     /**
      * 根据Java属性类型 查找对应的类型处理器
+     *
      * @param javaType
      * @param typeHandlerType
      * @return
@@ -220,7 +227,8 @@ public abstract class BaseBuilder {
     }
 
     /**
-     * 查找typeAliasRegistry中是否存在整个别名对应的Class
+     * 查找typeAliasRegistry中是否存在整个别名对应的Class，也可以是全类名
+     *
      * @param alias
      * @return
      */

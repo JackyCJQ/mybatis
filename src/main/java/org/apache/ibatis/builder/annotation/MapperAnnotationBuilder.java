@@ -123,6 +123,7 @@ public class MapperAnnotationBuilder {
     private void loadXmlResource() {
          //解析路径和名子与接口中一致
         if (!configuration.isResourceLoaded("namespace:" + type.getName())) {
+            //加载类的时候默认是和xml在同一路径下
             String xmlResource = type.getName().replace('.', '/') + ".xml";
             InputStream inputStream = null;
             try {

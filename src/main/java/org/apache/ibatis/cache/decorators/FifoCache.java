@@ -21,14 +21,9 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReadWriteLock;
 
-/**
- * FIFO (first in, first out) cache decorator
- *
- * @author Clinton Begin
- */
+
 /*
- * FIFO缓存 通过对于当个功能的增强 来组合在一起实现多个功能
- * 这个类就是维护一个FIFO链表，其他都委托给所包装的cache去做。典型的装饰模式
+ * 先进先出的缓存功能
  */
 public class FifoCache implements Cache {
     //被装饰的类
@@ -55,6 +50,7 @@ public class FifoCache implements Cache {
         return delegate.getSize();
     }
 
+    //设置缓存大小
     public void setSize(int size) {
         this.size = size;
     }
@@ -91,7 +87,7 @@ public class FifoCache implements Cache {
         keyList.addLast(key);
         //就是通过list来确定每次要移除的元素都是链表的第一个元素
         if (keyList.size() > size) {
-            //先移除列表中的 在移除实际中的
+            //移除第一个元素
             Object oldestKey = keyList.removeFirst();
             delegate.removeObject(oldestKey);
         }

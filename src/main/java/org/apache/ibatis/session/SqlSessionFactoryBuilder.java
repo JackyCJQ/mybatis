@@ -50,7 +50,7 @@ public class SqlSessionFactoryBuilder {
 
     /**
      * factory = new SqlSessionFactoryBuilder().build(reader);
-     * 此时在这个位置，可以自定义一个Environment,以及properties来初始化一些配置
+     * 在通过比如spring结合时通过spring来注入相关的属性
      * factory = new SqlSessionFactoryBuilder().build(reader,"id",new Properties());
      * @param reader  一个读取xml配置文件的流
      * @param environment 可以指定不同的数据源的环境 通过ID来标示

@@ -20,7 +20,7 @@ import java.lang.reflect.Type;
 
 /**
  * References a generic type.
- * 这个地方声明为抽象类，可以获取参数的类型 如果声明为接口则不好找到对应的原生类型
+ * 这个地方声明为抽象类，可以获取参数的类型
  *
  * @param <T> the referenced type
  * @author Simone Tripodi
@@ -37,7 +37,7 @@ public abstract class TypeReference<T> {
     }
 
     Type getSuperclassTypeParameter(Class<?> clazz) {
-        //得到TypeReference
+        // 获取到直接父类
         Type genericSuperclass = clazz.getGenericSuperclass();
         //如果T的直接父类为Class类型
         if (genericSuperclass instanceof Class) {

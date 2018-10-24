@@ -137,6 +137,7 @@ public class XPathParser {
 
     /**
      * 在解析的时候也可以注入变量
+     *
      * @param variables
      */
     public void setVariables(Properties variables) {
@@ -150,6 +151,7 @@ public class XPathParser {
 
     /**
      * 根据解析路径表达式 来获取相应的值
+     *
      * @param root
      * @param expression
      * @return
@@ -244,10 +246,9 @@ public class XPathParser {
     }
 
     /**
-     *
-     * @param expression  /configuration 这种路径表达式
-     * @param root     通过xml文件解析成的document文档
-     * @param returnType  解析的结果 根据QName不同类型返回不同的结果 NUMBER STRING BOOLEAN NODESET NODE等
+     * @param expression /configuration 这种路径表达式
+     * @param root       通过xml文件解析成的document文档
+     * @param returnType 解析的结果 根据QName不同类型返回不同的结果 NUMBER STRING BOOLEAN NODESET NODE等
      * @return
      */
     private Object evaluate(String expression, Object root, QName returnType) {
@@ -262,6 +263,7 @@ public class XPathParser {
     /**
      * 核心 就是把xml配置，按照约定的配置解析为一个document;
      * 在按照路径解析不同的属性配置
+     *
      * @param inputSource
      * @return
      */
@@ -307,6 +309,9 @@ public class XPathParser {
         }
     }
 
+    /**
+     * 初始化公共配置
+     */
     private void commonConstructor(boolean validation, Properties variables, EntityResolver entityResolver) {
         this.validation = validation;
         this.entityResolver = entityResolver;

@@ -45,25 +45,26 @@ public abstract class BaseExecutor implements Executor {
 
     private static final Log log = LogFactory.getLog(BaseExecutor.class);
 
-    //事务管理
+    //执行器需要操作数据库 因此需要关联事务
     protected Transaction transaction;
     //代理执行器
     protected Executor wrapper;
 
     //延迟加载队列（线程安全）
     protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
-    //本地缓存
+    //sql执行缓存
     protected PerpetualCache localCache;
-    //本地输出参数缓存
+    //执行过程缓存
     protected PerpetualCache localOutputParameterCache;
     //全局配置
     protected Configuration configuration;
 
     //查询堆栈
     protected int queryStack = 0;
-
+    //执行器 开始关闭标志
     private boolean closed;
 
+    //Transaction是必须要传递进来的
     protected BaseExecutor(Configuration configuration, Transaction transaction) {
         this.transaction = transaction;
         this.deferredLoads = new ConcurrentLinkedQueue<DeferredLoad>();
@@ -82,14 +83,11 @@ public abstract class BaseExecutor implements Executor {
         return transaction;
     }
 
-    /**
-     * 关闭的时候强制回滚
-     * @param forceRollback
-     */
     @Override
     public void close(boolean forceRollback) {
         try {
             try {
+                //关闭的时候 是否需要回滚数据
                 rollback(forceRollback);
             } finally {
                 if (transaction != null) {
@@ -100,7 +98,6 @@ public abstract class BaseExecutor implements Executor {
             // Ignore.  There's nothing that can be done at this point.
             log.warn("Unexpected exception on closing transaction.  Cause: " + e);
         } finally {
-            //关闭的时候把 事务 缓存清空
             transaction = null;
             deferredLoads = null;
             localCache = null;
@@ -114,7 +111,6 @@ public abstract class BaseExecutor implements Executor {
         return closed;
     }
 
-    //SqlSession.update/insert/delete会调用此方法
     @Override
     public int update(MappedStatement ms, Object parameter) throws SQLException {
         ErrorContext.instance().resource(ms.getResource()).activity("executing an update").object(ms.getId());
@@ -136,11 +132,10 @@ public abstract class BaseExecutor implements Executor {
         if (closed) {
             throw new ExecutorException("Executor was closed.");
         }
-        //交由具体的子类去实现
+        //交由具体的子类去实现，模板方法
         return doFlushStatements(isRollBack);
     }
 
-    //SqlSession.selectList会调用此方法
     @Override
     public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
         //得到绑定sql
@@ -151,6 +146,9 @@ public abstract class BaseExecutor implements Executor {
         return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
     }
 
+    /**
+     * 核心的查询操作
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
@@ -159,7 +157,7 @@ public abstract class BaseExecutor implements Executor {
         if (closed) {
             throw new ExecutorException("Executor was closed.");
         }
-        //先清局部缓存，再查询.但仅查询堆栈为0，才清。为了处理递归调用
+        //如果查询配置文件中配置了要求此次查询需要清空缓存 并且queryStack为0 才清空
         if (queryStack == 0 && ms.isFlushCacheRequired()) {
             clearLocalCache();
         }
@@ -167,7 +165,7 @@ public abstract class BaseExecutor implements Executor {
         try {
             //加一,这样递归调用到上面的时候就不会再清局部缓存了
             queryStack++;
-            //先根据cachekey从localCache去查
+            //如果结果处理器为null ,先从缓存里面拿
             list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
             if (list != null) {
                 //若查到localCache缓存，处理localOutputParameterCache
@@ -388,6 +386,7 @@ public abstract class BaseExecutor implements Executor {
         private final ObjectFactory objectFactory;
         //结果抽取器
         private final ResultExtractor resultExtractor;
+
         // issue #781
         public DeferredLoad(MetaObject resultObject,
                             String property,

@@ -29,7 +29,7 @@ import java.sql.Statement;
 import java.util.List;
 
 /**
- * 路由选择语句处理器,有点像代理模式
+ * StatementHandler根据配置在生成具体的
  * 
  */
 public class RoutingStatementHandler implements StatementHandler {

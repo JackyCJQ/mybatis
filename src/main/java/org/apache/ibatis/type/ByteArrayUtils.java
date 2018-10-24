@@ -20,23 +20,35 @@ package org.apache.ibatis.type;
  */
 class ByteArrayUtils {
 
-  private ByteArrayUtils() {
-    // Prevent Instantiation
-  }
-
-  static byte[] convertToPrimitiveArray(Byte[] objects) {
-    final byte[] bytes = new byte[objects.length];
-    for (int i = 0; i < objects.length; i++) {
-      bytes[i] = objects[i].byteValue();
+    private ByteArrayUtils() {
+        // Prevent Instantiation
     }
-    return bytes;
-  }
 
-  static Byte[] convertToObjectArray(byte[] bytes) {
-    final Byte[] objects = new Byte[bytes.length];
-    for (int i = 0; i < bytes.length; i++) {
-      objects[i] = Byte.valueOf(bytes[i]);
+    /**
+     * 转为基本类型的数据而不是包装类型
+     *
+     * @param objects
+     * @return
+     */
+    static byte[] convertToPrimitiveArray(Byte[] objects) {
+        final byte[] bytes = new byte[objects.length];
+        for (int i = 0; i < objects.length; i++) {
+            bytes[i] = objects[i].byteValue();
+        }
+        return bytes;
     }
-    return objects;
-  }
+
+    /**
+     * 把基本类型的字节数组转为包装类型
+     *
+     * @param bytes
+     * @return
+     */
+    static Byte[] convertToObjectArray(byte[] bytes) {
+        final Byte[] objects = new Byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            objects[i] = Byte.valueOf(bytes[i]);
+        }
+        return objects;
+    }
 }

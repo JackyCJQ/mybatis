@@ -148,11 +148,11 @@ public class XMLMapperBuilder extends BaseBuilder {
             if (namespace.equals("")) {
                 throw new BuilderException("Mapper's namespace cannot be empty");
             }
-            //配置命名空间,每一个mapper文件对应一个builderAssistant
+            //每一个mapper配置文件对应一个builderAssistant，每个mapper配置文件用namespace来区分
             builderAssistant.setCurrentNamespace(namespace);
             //2.配置cache-ref
             cacheRefElement(context.evalNode("cache-ref"));
-            //3.配置cache
+            //3.配置cache 配置此mapper缓存的方式
             cacheElement(context.evalNode("cache"));
             //4.配置parameterMap(已经废弃,老式风格的参数映射)
             parameterMapElement(context.evalNodes("/mapper/parameterMap"));
@@ -268,7 +268,7 @@ public class XMLMapperBuilder extends BaseBuilder {
 
     /**
      * 3.配置cache
-     * <cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true"/>
+     * <cache type="" eviction="FIFO" flushInterval="60000" size="512" readOnly="true"/>
      */
     private void cacheElement(XNode context) throws Exception {
         if (context != null) {
@@ -399,7 +399,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         ErrorContext.instance().activity("processing " + resultMapNode.getValueBasedIdentifier());
         //如果没有指定ID 会生成一个唯一标识符来代替ID
         String id = resultMapNode.getStringAttribute("id", resultMapNode.getValueBasedIdentifier());
-        //resultMap-->type，connection-->ofType associate-->resultye
+        //resultMap-->type，connection-->ofType associate-->resultye Discriminator->javaType
         String type = resultMapNode.getStringAttribute("type",
                 resultMapNode.getStringAttribute("ofType", resultMapNode.getStringAttribute("resultType", resultMapNode.getStringAttribute("javaType"))));
         /**
@@ -415,15 +415,16 @@ public class XMLMapperBuilder extends BaseBuilder {
         Class<?> typeClass = resolveClass(type);
         //鉴别器
         Discriminator discriminator = null;
-        //结果匹配
+        //匹配的所有结果
         List<ResultMapping> resultMappings = new ArrayList<ResultMapping>();
         resultMappings.addAll(additionalResultMappings);
         /**
          * 获取每个Java属性的具体配置，每个属性对应一个ResultMapping
          */
         List<XNode> resultChildren = resultMapNode.getChildren();
+        //结下resultMap下的所有有记过
         for (XNode resultChild : resultChildren) {
-            //如果是构造器
+            //如果是构造器中含有一部分属性 则通过调用有惨构造器
             if ("constructor".equals(resultChild.getName())) {
                 //解析resultMap的constructor
                 processConstructorElement(resultChild, typeClass, resultMappings);
@@ -568,6 +569,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         String column = context.getStringAttribute("column");
         String javaType = context.getStringAttribute("javaType");
         String jdbcType = context.getStringAttribute("jdbcType");
+        //是否是通过其他sql操作获取的这个值
         String nestedSelect = context.getStringAttribute("select");
         //处理嵌套的resultmap Java中的构造参数可能为pojo，也对应一个resultMap
         String nestedResultMap = context.getStringAttribute("resultMap",

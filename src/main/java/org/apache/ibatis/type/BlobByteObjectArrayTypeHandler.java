@@ -20,43 +20,46 @@ import java.sql.*;
 
 /**
  * 大的数据
+ *
  * @author Clinton Begin
  */
 public class BlobByteObjectArrayTypeHandler extends BaseTypeHandler<Byte[]> {
 
-  @Override
-  public void setNonNullParameter(PreparedStatement ps, int i, Byte[] parameter, JdbcType jdbcType)
-      throws SQLException {
-    ByteArrayInputStream bis = new ByteArrayInputStream(ByteArrayUtils.convertToPrimitiveArray(parameter));
-    ps.setBinaryStream(i, bis, parameter.length);
-  }
-
-  @Override
-  public Byte[] getNullableResult(ResultSet rs, String columnName)
-      throws SQLException {
-    Blob blob = rs.getBlob(columnName);
-    return getBytes(blob);
-  }
-
-  @Override
-  public Byte[] getNullableResult(ResultSet rs, int columnIndex)
-      throws SQLException {
-    Blob blob = rs.getBlob(columnIndex);
-    return getBytes(blob);
-  }
-
-  @Override
-  public Byte[] getNullableResult(CallableStatement cs, int columnIndex)
-      throws SQLException {
-    Blob blob = cs.getBlob(columnIndex);
-    return getBytes(blob);
-  }
-
-  private Byte[] getBytes(Blob blob) throws SQLException {
-    Byte[] returnValue = null;
-    if (blob != null) {
-      returnValue = ByteArrayUtils.convertToObjectArray(blob.getBytes(1, (int) blob.length()));
+    @Override
+    public void setNonNullParameter(PreparedStatement ps, int i, Byte[] parameter, JdbcType jdbcType)
+            throws SQLException {
+        //字节数组，通过流的方式注入
+        ByteArrayInputStream bis = new ByteArrayInputStream(ByteArrayUtils.convertToPrimitiveArray(parameter));
+        ps.setBinaryStream(i, bis, parameter.length);
     }
-    return returnValue;
-  }
+
+    @Override
+    public Byte[] getNullableResult(ResultSet rs, String columnName)
+            throws SQLException {
+        //得到二进制数据类型
+        Blob blob = rs.getBlob(columnName);
+        return getBytes(blob);
+    }
+
+    @Override
+    public Byte[] getNullableResult(ResultSet rs, int columnIndex)
+            throws SQLException {
+        Blob blob = rs.getBlob(columnIndex);
+        return getBytes(blob);
+    }
+
+    @Override
+    public Byte[] getNullableResult(CallableStatement cs, int columnIndex)
+            throws SQLException {
+        Blob blob = cs.getBlob(columnIndex);
+        return getBytes(blob);
+    }
+
+    private Byte[] getBytes(Blob blob) throws SQLException {
+        Byte[] returnValue = null;
+        if (blob != null) {
+            returnValue = ByteArrayUtils.convertToObjectArray(blob.getBytes(1, (int) blob.length()));
+        }
+        return returnValue;
+    }
 }

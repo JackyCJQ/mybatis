@@ -30,7 +30,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * 把方法映射到相应的sql声明模块
+ * 把接口中的方法映射到相应的sql声明模块
  * 映射器方法
  */
 public class MapperMethod {
@@ -50,9 +50,9 @@ public class MapperMethod {
         Object result;
         //可以看到执行时就是4种情况，insert|update|delete|select，分别调用SqlSession的4大类方法
         if (SqlCommandType.INSERT == command.getType()) {
-            //param是一个数组 根据声明的顺序或者是@Param
+            //param是一个Map 根据声明的顺序或者是@Param
             Object param = method.convertArgsToSqlCommandParam(args);
-            //返回的是数字或者布尔类型
+            //返回的是数字或者布尔类型 command.getName()为statementId+sqlId
             result = rowCountResult(sqlSession.insert(command.getName(), param));
 
         } else if (SqlCommandType.UPDATE == command.getType()) {
@@ -261,7 +261,7 @@ public class MapperMethod {
 
         private final Class<?> returnType;//判断方法返回结果具体类型
 
-        private final String mapKey; //方法上是有@MapKey注解，可以给返回的map结果，一个字符串标记
+        private final String mapKey; //方法上是有@MapKey注解，可以给返回的map结果指定key
         //记下resultHandler在方法声明中是第几个参数
         private final Integer resultHandlerIndex;
         //记下Rowbounds在方法声明中是第几个参数
@@ -272,6 +272,7 @@ public class MapperMethod {
         private final boolean hasNamedParameters;
 
         public MethodSignature(Configuration configuration, Method method) {
+            //获取返回值的类型
             this.returnType = method.getReturnType();
             //判断是否是有返回值
             this.returnsVoid = void.class.equals(this.returnType);
@@ -279,6 +280,7 @@ public class MapperMethod {
             this.returnsMany = (configuration.getObjectFactory().isCollection(this.returnType) || this.returnType.isArray());
             //判断返回结果是否是map类型
             this.mapKey = getMapKey(method);
+            //如果返回的不为map,则为null
             this.returnsMap = (this.mapKey != null);
 
             //看方法签名中是否有@Param注解
@@ -457,8 +459,11 @@ public class MapperMethod {
          */
         private boolean hasNamedParams(Method method) {
             boolean hasNamedParams = false;
+            //每个方法有多个参数，每个参数可能有多个注解
             final Object[][] paramAnnos = method.getParameterAnnotations();
+            //遍历每一个参数
             for (Object[] paramAnno : paramAnnos) {
+                //遍历每个参数的每个注解
                 for (Object aParamAnno : paramAnno) {
                     if (aParamAnno instanceof Param) {
                         //查找@Param注解

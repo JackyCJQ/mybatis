@@ -21,11 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 
-/**
- * Lru (first in, first out) cache decorator
- *
- * @author Clinton Begin
- */
 /*
  * 最近最少使用缓存
  * 基于 LinkedHashMap 覆盖其 removeEldestEntry 方法实现。
@@ -58,15 +53,12 @@ public class LruCache implements Cache {
         keyMap = new LinkedHashMap<Object, Object>(size, .75F, true) {
             private static final long serialVersionUID = 4267176411845948333L;
 
-            //核心就是覆盖 LinkedHashMap.removeEldestEntry方法,
-            //返回true或false告诉 LinkedHashMap要不要删除此最老键值
             //LinkedHashMap内部其实就是每次访问或者插入一个元素都会把元素放到链表末尾，
-            //这样不经常访问的键值肯定就在链表开头啦
             @Override
             protected boolean removeEldestEntry(Map.Entry<Object, Object> eldest) {
                 boolean tooBig = size() > size;
                 if (tooBig) {
-                    //这里没辙了，把eldestKey存入实例变量
+                    //把eldestKey存入实例变量
                     eldestKey = eldest.getKey();
                 }
                 return tooBig;

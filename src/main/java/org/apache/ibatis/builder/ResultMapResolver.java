@@ -21,9 +21,6 @@ import org.apache.ibatis.mapping.ResultMapping;
 
 import java.util.List;
 
-/**
- * @author Eduardo Macarron
- */
 
 /**
  * 结果映射解析器
