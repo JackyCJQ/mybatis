@@ -22,7 +22,7 @@ import org.apache.ibatis.session.ResultContext;
  */
 public class DefaultResultContext implements ResultContext {
 
-    //没一行的结果
+    //每一行的结果
     private Object resultObject;
     //结果的数量
     private int resultCount;
@@ -32,6 +32,7 @@ public class DefaultResultContext implements ResultContext {
     public DefaultResultContext() {
         resultObject = null;
         resultCount = 0;
+        //默认是没有停止的
         stopped = false;
     }
 
@@ -51,13 +52,15 @@ public class DefaultResultContext implements ResultContext {
     }
 
     /**
-     * 每次调用这个方法来迭代结果集
+     * 每次调用这个方法来迭代结果集，结果集也是需要不断传入的
+     *
      * @param resultObject
      */
     public void nextResultObject(Object resultObject) {
         resultCount++;
         this.resultObject = resultObject;
     }
+
     @Override
     public void stop() {
         this.stopped = true;

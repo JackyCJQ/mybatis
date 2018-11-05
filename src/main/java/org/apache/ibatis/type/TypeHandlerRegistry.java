@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+
 /**
  * 类型处理器注册机
  * 不管是Java类型还是jdbc类型都一个一个对应的类型处理器
@@ -41,7 +42,7 @@ public final class TypeHandlerRegistry {
 
 
     public TypeHandlerRegistry() {
-        //构造函数里注册系统内置的类型处理器
+        //构造函数里注册系统内置的类型处理器，这种情况是不需要知道jdbc类型的，注册的时候jdbc类型为null
         register(Boolean.class, new BooleanTypeHandler());
         register(boolean.class, new BooleanTypeHandler());
         register(JdbcType.BOOLEAN, new BooleanTypeHandler());
@@ -70,7 +71,7 @@ public final class TypeHandlerRegistry {
         register(double.class, new DoubleTypeHandler());
         register(JdbcType.DOUBLE, new DoubleTypeHandler());
 
-        //以下是为同一个类型的多种变种注册到多个不同的handler
+        //以下是为同一个类型的多种变种注册到多个不同的handler，这种情况仅仅根据Java类型还不足以确定，还需要具体指出jdbc类型才能获取到对应的处理器
         register(String.class, new StringTypeHandler());
         register(String.class, JdbcType.CHAR, new StringTypeHandler());
         register(String.class, JdbcType.CLOB, new ClobTypeHandler());
@@ -130,7 +131,7 @@ public final class TypeHandlerRegistry {
     }
 
 
-    //根据Java类型找到对应的类型处理器
+    //根据Java类型找到对应的,jdbctype为null的类型处理器，
     public boolean hasTypeHandler(Class<?> javaType) {
         return hasTypeHandler(javaType, null);
     }
@@ -159,7 +160,8 @@ public final class TypeHandlerRegistry {
     public <T> TypeHandler<T> getTypeHandler(TypeReference<T> javaTypeReference) {
         return getTypeHandler(javaTypeReference, null);
     }
-     //每个jdbc类型对应一个处理器
+
+    //每个jdbc类型对应一个处理器
     public TypeHandler<?> getTypeHandler(JdbcType jdbcType) {
         return JDBC_TYPE_HANDLER_MAP.get(jdbcType);
     }
@@ -187,9 +189,9 @@ public final class TypeHandlerRegistry {
                 handler = jdbcHandlerMap.get(null);
             }
         }
-        //如果是枚举类型的类型处理器 则新建一个枚举类型的处理器
+        //如果是枚举类型的类型处理器 则新建一个枚举类型的处理器，按照枚举的名字进行处理
         if (handler == null && type != null && type instanceof Class && Enum.class.isAssignableFrom((Class<?>) type)) {
-             //按照名字的枚举处理器
+            //按照名字的枚举处理器
             handler = new EnumTypeHandler((Class<?>) type);
         }
         // type drives generics here
@@ -242,6 +244,13 @@ public final class TypeHandlerRegistry {
         register((Type) javaType, typeHandler);
     }
 
+    /**
+     * 注册Java类型的typeHandler
+     *
+     * @param javaType
+     * @param typeHandler
+     * @param <T>
+     */
     private <T> void register(Type javaType, TypeHandler<? extends T> typeHandler) {
         //MappedJdbcTypes的注解的用法可参考测试类StringTrimmingTypeHandler
         //另外在文档中也提到，这是扩展自定义的typeHandler所需要的
@@ -283,6 +292,7 @@ public final class TypeHandlerRegistry {
             }
             map.put(jdbcType, handler);
         }
+        //不管javaType是否为空 都会注册
         ALL_TYPE_HANDLERS_MAP.put(handler.getClass(), handler);
     }
 

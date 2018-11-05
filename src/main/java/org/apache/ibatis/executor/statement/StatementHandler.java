@@ -58,7 +58,7 @@ public interface StatementHandler {
             throws SQLException;
 
     /**
-     * update
+     * 删除，更新，插入操作执行的方法
      *
      * @param statement
      * @return

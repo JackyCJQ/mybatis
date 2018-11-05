@@ -70,9 +70,9 @@ public abstract class BaseStatementHandler implements StatementHandler {
 
         this.boundSql = boundSql;
 
-        //生成parameterHandler
+        //生成parameterHandler,参数处理器
         this.parameterHandler = configuration.newParameterHandler(mappedStatement, parameterObject, boundSql);
-        //生成resultSetHandler
+        //生成resultSetHandler，结果处理器
         this.resultSetHandler = configuration.newResultSetHandler(executor, mappedStatement, rowBounds, parameterHandler, resultHandler, boundSql);
     }
 
@@ -92,7 +92,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
         ErrorContext.instance().sql(boundSql.getSql());
         Statement statement = null;
         try {
-            //实例化Statement
+            //设置主键，超时事件，获取的结果集等，并预编译
             statement = instantiateStatement(connection);
             //设置超时
             setStatementTimeout(statement);
@@ -166,6 +166,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
     protected void generateKeys(Object parameter) {
         KeyGenerator keyGenerator = mappedStatement.getKeyGenerator();
         ErrorContext.instance().store();
+        //在执行操作前，生成对应的主键
         keyGenerator.processBefore(executor, mappedStatement, null, parameter);
         ErrorContext.instance().recall();
     }

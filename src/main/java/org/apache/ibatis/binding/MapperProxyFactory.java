@@ -31,6 +31,7 @@ public class MapperProxyFactory<T> {
     //接口中每个方法 需要匹配具体的sql信息，所以每个方法都会对应一个MapperMethod
     private Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<Method, MapperMethod>();
 
+    //只需传递进来一个接口
     public MapperProxyFactory(Class<T> mapperInterface) {
         this.mapperInterface = mapperInterface;
     }

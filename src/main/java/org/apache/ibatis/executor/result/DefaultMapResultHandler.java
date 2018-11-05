@@ -41,6 +41,7 @@ public class DefaultMapResultHandler<K, V> implements ResultHandler {
     public DefaultMapResultHandler(String mapKey, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory) {
         this.objectFactory = objectFactory;
         this.objectWrapperFactory = objectWrapperFactory;
+        //生成一个hashmap
         this.mappedResults = objectFactory.create(Map.class);
         this.mapKey = mapKey;
     }

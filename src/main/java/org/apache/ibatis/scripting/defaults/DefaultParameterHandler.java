@@ -32,7 +32,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * 默认参数处理器
+ * 默认参数处理器，在预编译sql语句之后，进行参数的填充
  */
 public class DefaultParameterHandler implements ParameterHandler {
 
@@ -65,6 +65,7 @@ public class DefaultParameterHandler implements ParameterHandler {
     public void setParameters(PreparedStatement ps) throws SQLException {
         //设置一个上下文 用来跟踪设置参数的过程 会不会出错
         ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
+        //得到参数映射
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
 
         if (parameterMappings != null) {
@@ -73,6 +74,7 @@ public class DefaultParameterHandler implements ParameterHandler {
                 //如果是in则为查询过程，需要设置参数
                 if (parameterMapping.getMode() != ParameterMode.OUT) {
                     Object value;
+                    //获取属性值
                     String propertyName = parameterMapping.getProperty();
                     //设置额外参数
                     if (boundSql.hasAdditionalParameter(propertyName)) {
@@ -94,6 +96,7 @@ public class DefaultParameterHandler implements ParameterHandler {
                         //不管是数据为null,还是jdbc为Null,设置的时候需要数据库自适应
                         jdbcType = configuration.getJdbcTypeForNull();
                     }
+                    //最终设置参数
                     typeHandler.setParameter(ps, i + 1, value, jdbcType);
                 }
             }

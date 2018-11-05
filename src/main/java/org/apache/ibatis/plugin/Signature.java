@@ -21,10 +21,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Clinton Begin
- */
-
-/**
  * 签名
  */
 @Retention(RetentionPolicy.RUNTIME)

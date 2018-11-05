@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 
 /**
- * 事务缓存
+ * 事务缓存 二级缓存时用到的
  * 一次性存入多个缓存，移除多个缓存
  *
  */

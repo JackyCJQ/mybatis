@@ -35,15 +35,25 @@ public class PreparedStatementHandler extends BaseStatementHandler {
         super(executor, mappedStatement, parameter, rowBounds, resultHandler, boundSql);
     }
 
+    /**
+     * 真正执行操作的地方
+     * @param statement
+     * @return 返回更新的行数
+     * @throws SQLException
+     */
     @Override
     public int update(Statement statement) throws SQLException {
         //调用PreparedStatement.execute和PreparedStatement.getUpdateCount
         PreparedStatement ps = (PreparedStatement) statement;
+       //这里开始真正就行了sql的执行
         ps.execute();
         //更新的行数
         int rows = ps.getUpdateCount();
+        //实际传入的参数值
         Object parameterObject = boundSql.getParameterObject();
+        //获取主键生成器
         KeyGenerator keyGenerator = mappedStatement.getKeyGenerator();
+        //在执行完之后，只能利用后置的主键生成器，回填主键
         keyGenerator.processAfter(executor, mappedStatement, ps, parameterObject);
         return rows;
     }
@@ -59,6 +69,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
         PreparedStatement ps = (PreparedStatement) statement;
         //准备执行
         ps.execute();
+        //利用结果处理器进行处理结果
         return resultSetHandler.<E>handleResultSets(ps);
     }
 
@@ -70,8 +81,10 @@ public class PreparedStatementHandler extends BaseStatementHandler {
             //得到主键的列
             String[] keyColumnNames = mappedStatement.getKeyColumns();
             if (keyColumnNames == null) {
+                //利用数据库生成主键
                 return connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             } else {
+                //自定义的主键序列
                 return connection.prepareStatement(sql, keyColumnNames);
             }
         } else if (mappedStatement.getResultSetType() != null) {

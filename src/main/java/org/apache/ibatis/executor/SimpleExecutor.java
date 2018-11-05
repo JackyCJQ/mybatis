@@ -51,9 +51,9 @@ public class SimpleExecutor extends BaseExecutor {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
-      //新建一个StatementHandler
+      //新建一个StatementHandler,这个默认是PreparedStatementHandler
       StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
-      //准备语句
+      //准备语句，参数已经设置完毕，等待执行器执行
       stmt = prepareStatement(handler, ms.getStatementLog());
       //StatementHandler.update
       return handler.update(stmt);
@@ -70,7 +70,7 @@ public class SimpleExecutor extends BaseExecutor {
       Configuration configuration = ms.getConfiguration();
       //新建一个StatementHandler
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
-      //准备语句
+      //准备语句，参数已经设置完毕，等待执行器执行结果
       stmt = prepareStatement(handler, ms.getStatementLog());
       //StatementHandler.query
       return handler.<E>query(stmt, resultHandler);

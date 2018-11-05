@@ -27,7 +27,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * 执行器
+ * 执行器,定义执行的方法
  */
 public interface Executor {
 

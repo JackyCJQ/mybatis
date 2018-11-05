@@ -52,6 +52,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
         return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, autoCommit);
     }
 
+    //可以指定获取时的执行器
     @Override
     public SqlSession openSession(ExecutorType execType) {
         return openSessionFromDataSource(execType, null, false);
@@ -135,7 +136,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     }
 
     /**
-     * 获取环境对应的事务
+     * 获取环境对应的事务，这个应该在配置文件中所有设置
      *
      * @param environment
      * @return

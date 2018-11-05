@@ -16,9 +16,9 @@
 package org.apache.ibatis.plugin;
 
 import java.util.Properties;
+
 /**
  * 拦截器
- *
  */
 /*
   <plugins>
@@ -36,13 +36,13 @@ import java.util.Properties;
 */
 public interface Interceptor {
 
-  //拦截
-  Object intercept(Invocation invocation) throws Throwable;
+    //拦截
+    Object intercept(Invocation invocation) throws Throwable;
 
-  //这里会生成一个 Invocation
-  Object plugin(Object target);
+    //这里会生成一个 Invocation
+    Object plugin(Object target);
 
-  //设置属性
-  void setProperties(Properties properties);
+    //设置属性
+    void setProperties(Properties properties);
 
 }

@@ -42,13 +42,14 @@ public class Plugin implements InvocationHandler {
   }
 
   /**
+   * 包装创建了一个代理对象
    * targets为参数
    * @param target
    * @param interceptor
    * @return
    */
   public static Object wrap(Object target, Interceptor interceptor) {
-    //取得签名Map
+    //获取所要拦截的方法信息
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
     //取得要改变行为的类(ParameterHandler|ResultSetHandler|StatementHandler|Executor)
     Class<?> type = target.getClass();
@@ -74,7 +75,7 @@ public class Plugin implements InvocationHandler {
         //调用Interceptor.intercept，也即插入了我们自己的逻辑
         return interceptor.intercept(new Invocation(target, method, args));
       }
-      //最后还是执行原来逻辑
+      //如果不是拦截的方法，即执行原来的方法
       return method.invoke(target, args);
     } catch (Exception e) {
       throw ExceptionUtil.unwrapThrowable(e);
@@ -106,7 +107,7 @@ public class Plugin implements InvocationHandler {
         signatureMap.put(sig.type(), methods);
       }
       try {
-          //方法的名字，参数
+          //通过反射的方式获取方法
         Method method = sig.type().getMethod(sig.method(), sig.args());
         methods.add(method);
       } catch (NoSuchMethodException e) {
@@ -116,9 +117,15 @@ public class Plugin implements InvocationHandler {
     return signatureMap;
   }
 
-  //取得接口
+  /**
+   *
+   * @param type 原来的类
+   * @param signatureMap 所要拦截的方法
+   * @return
+   */
   private static Class<?>[] getAllInterfaces(Class<?> type, Map<Class<?>, Set<Method>> signatureMap) {
     Set<Class<?>> interfaces = new HashSet<Class<?>>();
+    //循环获取
     while (type != null) {
       for (Class<?> c : type.getInterfaces()) {
         //貌似只能拦截ParameterHandler|ResultSetHandler|StatementHandler|Executor

@@ -58,7 +58,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     public String getCurrentNamespace() {
         return currentNamespace;
     }
-
+    //  设置构建的命名空间
     public void setCurrentNamespace(String currentNamespace) {
         if (currentNamespace == null) {
             throw new BuilderException("The mapper element requires a namespace attribute to be specified.");

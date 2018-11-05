@@ -30,7 +30,7 @@ import java.sql.Statement;
  */
 public interface KeyGenerator {
 
-  //定了2个回调方法，processBefore,processAfter
+  //定了2个回调方法，在执行器执行之前或者是在执行器之后执行  processBefore,processAfter
   void processBefore(Executor executor, MappedStatement ms, Statement stmt, Object parameter);
 
   void processAfter(Executor executor, MappedStatement ms, Statement stmt, Object parameter);

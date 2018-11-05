@@ -28,16 +28,15 @@ import java.util.*;
 public class MapperRegistry {
 
     private Configuration config;
-    //每一个mapper接口 都有一个对应mapperProxy生产工厂
+    //每一个mapper接口 都有与之对应的MapperProxyFactory，用来生成代理类
     private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<Class<?>, MapperProxyFactory<?>>();
 
     public MapperRegistry(Configuration config) {
         this.config = config;
     }
 
-    //返回代理类 接口需要在session中获取，也就是需要和特定的session关联在一起
+    //返回接口的代理类实现，创建的实例需要和session中去执行
     public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
-        //获取接口对应的生产工厂
         final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
         if (mapperProxyFactory == null) {
             throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
@@ -75,7 +74,7 @@ public class MapperRegistry {
             try {
                 //动态代理的实现，默认给每个接口生成一个代理工厂
                 knownMappers.put(type, new MapperProxyFactory<T>(type));
-                //解析接口上添加的注解信息
+                //解析接口上添加的注解信息，以及对应的xml配置信息
                 MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
                 parser.parse();
                 loadCompleted = true;

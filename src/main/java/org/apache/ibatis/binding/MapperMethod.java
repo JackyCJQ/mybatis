@@ -30,31 +30,40 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * 把接口中的方法映射到相应的sql声明模块
- * 映射器方法
+ * 接口中的方法映射到相应的sql声明模块，这样在方法执行的时候，就能调用对应的sql去执行
  */
 public class MapperMethod {
-    //把接口和配置文件 关联起来的一个纽带
+    //接口中方法执行类型（增删改查）
     private final SqlCommand command;
-    //方法签名
+    //方法签名，获取返回结果，参数等信息
     private final MethodSignature method;
 
-    //传递进接口   接口中的方法  以及全局配置
+    /**
+     * @param mapperInterface 用户定义的接口
+     * @param method          接口中的每一个方法
+     * @param config          全局配置文件
+     */
     public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
         this.command = new SqlCommand(config, mapperInterface, method);
         this.method = new MethodSignature(config, method);
     }
 
-    //执行
+    /**
+     * 接口代理方法执行
+     *
+     * @param sqlSession
+     * @param args       Java程序中实际的参数
+     * @return
+     */
     public Object execute(SqlSession sqlSession, Object[] args) {
+        //存放sql执行放回的结果
         Object result;
-        //可以看到执行时就是4种情况，insert|update|delete|select，分别调用SqlSession的4大类方法
+        //4种情况，insert|update|delete|select，分别调用SqlSession的4大类方法
         if (SqlCommandType.INSERT == command.getType()) {
-            //param是一个Map 根据声明的顺序或者是@Param
+            //把Java程序中实际的参数转为mapper.xml中可获取的形式
             Object param = method.convertArgsToSqlCommandParam(args);
-            //返回的是数字或者布尔类型 command.getName()为statementId+sqlId
+            //根据方法声明的类型返回 （int,long ,boolean）
             result = rowCountResult(sqlSession.insert(command.getName(), param));
-
         } else if (SqlCommandType.UPDATE == command.getType()) {
             Object param = method.convertArgsToSqlCommandParam(args);
             result = rowCountResult(sqlSession.update(command.getName(), param));
@@ -62,9 +71,9 @@ public class MapperMethod {
             Object param = method.convertArgsToSqlCommandParam(args);
             result = rowCountResult(sqlSession.delete(command.getName(), param));
         } else if (SqlCommandType.SELECT == command.getType()) {
-            //如果查询的方法没有要求返回结果，接口上一定要求@ResultMap等能接受结果的注解
+            //用户定义的接口中无返回结果并且在接口的参数中自己定义了结果处理器
             if (method.returnsVoid() && method.hasResultHandler()) {
-                //如果有结果处理器
+                //则利用用户自己定义的结果处理器进行处理
                 executeWithResultHandler(sqlSession, args);
                 result = null;
             } else if (method.returnsMany()) {
@@ -81,6 +90,7 @@ public class MapperMethod {
         } else {
             throw new BindingException("Unknown execution method for: " + command.getName());
         }
+        //如果返回结果为null，返回结果类型定义为基本类型并且不是void类型
         if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
             throw new BindingException("Mapper method '" + command.getName()
                     + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
@@ -90,6 +100,7 @@ public class MapperMethod {
 
     /**
      * 更新，删除，修改 返回对应的 方法中定义的数据类型
+     *
      * @param rowCount
      * @return
      */
@@ -114,10 +125,13 @@ public class MapperMethod {
         return result;
     }
 
-    //结果处理器
+    /**
+     * @param sqlSession
+     * @param args
+     */
     private void executeWithResultHandler(SqlSession sqlSession, Object[] args) {
         MappedStatement ms = sqlSession.getConfiguration().getMappedStatement(command.getName());
-        //？？？？
+        //用户需要定义结果集处理类型
         if (void.class.equals(ms.getResultMaps().get(0).getType())) {
             throw new BindingException("method " + command.getName()
                     + " needs either a @ResultMap annotation, a @ResultType annotation,"
@@ -126,6 +140,7 @@ public class MapperMethod {
         Object param = method.convertArgsToSqlCommandParam(args);
         if (method.hasRowBounds()) {
             RowBounds rowBounds = method.extractRowBounds(args);
+            //自带自定义的分页以及自定义结果集处理器 进行查询
             sqlSession.select(command.getName(), param, rowBounds, method.extractResultHandler(args));
         } else {
             sqlSession.select(command.getName(), param, method.extractResultHandler(args));
@@ -136,7 +151,7 @@ public class MapperMethod {
     private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
         List<E> result;
         Object param = method.convertArgsToSqlCommandParam(args);
-        //代入RowBounds
+        //如果用户接口中有定义分页的参数
         if (method.hasRowBounds()) {
             RowBounds rowBounds = method.extractRowBounds(args);
             result = sqlSession.<E>selectList(command.getName(), param, rowBounds);
@@ -144,6 +159,7 @@ public class MapperMethod {
             result = sqlSession.<E>selectList(command.getName(), param);
         }
         // issue #510 Collections & arrays support
+        //如果用户接口定义返回形式不是list 则需要转换为数组或者是其他集合的形式
         if (!method.getReturnType().isAssignableFrom(result.getClass())) {
             if (method.getReturnType().isArray()) {
                 return convertToArray(result);
@@ -156,18 +172,27 @@ public class MapperMethod {
 
     /**
      * 自定义的返回集合
+     *
      * @param config
      * @param list
      * @param <E>
      * @return
      */
     private <E> Object convertToDeclaredCollection(Configuration config, List<E> list) {
+        //创建用户接口自定义返回结果的形式
         Object collection = config.getObjectFactory().create(method.getReturnType());
         MetaObject metaObject = config.newMetaObject(collection);
         metaObject.addAll(list);
         return collection;
     }
 
+    /**
+     * 把list转化为array
+     *
+     * @param list
+     * @param <E>
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private <E> E[] convertToArray(List<E> list) {
         E[] array = (E[]) Array.newInstance(method.getReturnType().getComponentType(), list.size());
@@ -175,11 +200,16 @@ public class MapperMethod {
         return array;
     }
 
+    /**
+     * 对于返回结果为map的形式
+     */
     private <K, V> Map<K, V> executeForMap(SqlSession sqlSession, Object[] args) {
         Map<K, V> result;
         Object param = method.convertArgsToSqlCommandParam(args);
+        //用户方法中是否有添加分页条件
         if (method.hasRowBounds()) {
             RowBounds rowBounds = method.extractRowBounds(args);
+            //指定生成Map时的主键
             result = sqlSession.<K, V>selectMap(command.getName(), param, method.getMapKey(), rowBounds);
         } else {
             result = sqlSession.<K, V>selectMap(command.getName(), param, method.getMapKey());
@@ -187,7 +217,11 @@ public class MapperMethod {
         return result;
     }
 
-    //如果没有相应的key，报错
+    /**
+     * 对于sql执行时，一定要获取到参数，如果获取不到则直接报错。
+     *
+     * @param <V>
+     */
     public static class ParamMap<V> extends HashMap<String, V> {
 
         private static final long serialVersionUID = -2212268410512043556L;
@@ -203,11 +237,10 @@ public class MapperMethod {
     }
 
     /**
-     * 对应sql的ID，执行类型
-     *
+     * 对应方法执行的类型，对应sql配置的具体路径，并且保证每一个方法都能匹配到对应的sql信息，否则则报错
      */
     public static class SqlCommand {
-        // sql.xml中定义的meppedStatementId
+        //statementID
         private final String name;
         //  sql执行类型  UNKNOWN, INSERT, UPDATE, DELETE, SELECT;
         private final SqlCommandType type;
@@ -217,22 +250,23 @@ public class MapperMethod {
             String statementName = mapperInterface.getName() + "." + method.getName();
             //每一个方法执行的具体信息
             MappedStatement ms = null;
-            //规则就是statementid为接口为mapper接口的全限定名 sql的id为接口中方法的名字 这样就把配置和接口联系起来
-            //这个在解析xml.时就会生成对应的MappedStatement，此时只需要把两者关联起来
+            /**规则就是statementid为接口为mapper接口的全限定名+方法的名字
+             sql的id为mapper.xml的namespace+<id=''>
+             */
             if (configuration.hasStatement(statementName)) {
                 ms = configuration.getMappedStatement(statementName);
             } else if (!mapperInterface.equals(method.getDeclaringClass().getName())) {
-                //这个方法可能为Implements父接口，需要找到定义的接口
+                //这个方法可能为Implements父接口，需要找到定义的接口,才能匹配到与其对应的sql信息
                 String parentStatementName = method.getDeclaringClass().getName() + "." + method.getName();
                 if (configuration.hasStatement(parentStatementName)) {
                     ms = configuration.getMappedStatement(parentStatementName);
                 }
             }
-            //如果没有找到，方法没有对应的sql信息，无法执行
+            //如果没有找到，则没有对应的sql信息，无法执行
             if (ms == null) {
                 throw new BindingException("Invalid bound statement (not found): " + statementName);
             }
-            //实际上应该就是 为mapper接口的全限定名+.+方法的名字 作为全局唯一的标志
+            //为mapper接口的全限定名+.+方法的名字 作为全局唯一的标志
             name = ms.getId();
             type = ms.getSqlCommandType();
             //sql类型要确定，才能往下具体执行
@@ -259,7 +293,7 @@ public class MapperMethod {
         private final boolean returnsMap; //判断方法返回的结果是否是Map类型
         private final boolean returnsVoid;//判断方法返回的结果是否返回为void
 
-        private final Class<?> returnType;//判断方法返回结果具体类型
+        private final Class<?> returnType;//判断方法返回结果具体类型，void也是一种类型
 
         private final String mapKey; //方法上是有@MapKey注解，可以给返回的map结果指定key
         //记下resultHandler在方法声明中是第几个参数
@@ -271,6 +305,12 @@ public class MapperMethod {
         //判断方法签名上 是否有@Param注解
         private final boolean hasNamedParameters;
 
+        /**
+         * 主要是获取方法参数的信息
+         *
+         * @param configuration
+         * @param method
+         */
         public MethodSignature(Configuration configuration, Method method) {
             //获取返回值的类型
             this.returnType = method.getReturnType();
@@ -278,11 +318,10 @@ public class MapperMethod {
             this.returnsVoid = void.class.equals(this.returnType);
             //返回结果是集合或者是数组
             this.returnsMany = (configuration.getObjectFactory().isCollection(this.returnType) || this.returnType.isArray());
-            //判断返回结果是否是map类型
+            //判断返回结果是否是map类型，如果是map类型需要指定主键是哪个属性
             this.mapKey = getMapKey(method);
             //如果返回的不为map,则为null
             this.returnsMap = (this.mapKey != null);
-
             //看方法签名中是否有@Param注解
             this.hasNamedParameters = hasNamedParams(method);
 
@@ -290,7 +329,7 @@ public class MapperMethod {
             this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);
             //记下ResultHandler在方法中是第几个参数
             this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
-
+            //返回对应参数的位置
             this.params = Collections.unmodifiableSortedMap(getParams(method, this.hasNamedParameters));
         }
 
@@ -307,7 +346,7 @@ public class MapperMethod {
             if (args == null || paramCount == 0) {
                 return null;
             } else if (!hasNamedParameters && paramCount == 1) {
-                //如果只有一个参数 并且没有参数注解
+                //如果只有一个参数 并且没有参数注解，就返回这个参数本身
                 //注意这里不能直接取0，因为方法中定义没有参数，但是可能会有resultHandler，RowBounds
                 return args[params.keySet().iterator().next().intValue()];
             } else {
@@ -337,6 +376,7 @@ public class MapperMethod {
             return rowBoundsIndex != null;
         }
 
+        //从参数中得到分页参数
         public RowBounds extractRowBounds(Object[] args) {
             return hasRowBounds() ? (RowBounds) args[rowBoundsIndex] : null;
         }
@@ -345,6 +385,7 @@ public class MapperMethod {
             return resultHandlerIndex != null;
         }
 
+        //从参数中获取结果处理器
         public ResultHandler extractResultHandler(Object[] args) {
             return hasResultHandler() ? (ResultHandler) args[resultHandlerIndex] : null;
         }
@@ -371,6 +412,7 @@ public class MapperMethod {
 
         /**
          * 查找特定参数在参数列表中的位置
+         *
          * @param method
          * @param paramType
          * @return
@@ -380,7 +422,7 @@ public class MapperMethod {
             //按照声明的顺序  依次获取参数的类型
             final Class<?>[] argTypes = method.getParameterTypes();
             for (int i = 0; i < argTypes.length; i++) {
-                  //返回第一次出现的次数
+                //返回第一次出现的次数
                 if (paramType.isAssignableFrom(argTypes[i])) {
                     if (index == null) {
                         index = i;
@@ -394,6 +436,7 @@ public class MapperMethod {
         }
 
         /**
+         * 判断是否存在@MapKey注解
          *
          * @param method
          * @return
@@ -414,6 +457,7 @@ public class MapperMethod {
 
         /**
          * 按照声明的顺序
+         *
          * @param method
          * @param hasNamedParameters
          * @return
@@ -454,6 +498,7 @@ public class MapperMethod {
 
         /**
          * 查看参数中是否标有@Param注解
+         *
          * @param method
          * @return
          */

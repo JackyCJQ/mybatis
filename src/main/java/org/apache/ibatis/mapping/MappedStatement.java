@@ -58,7 +58,7 @@ public final class MappedStatement {
     private boolean resultOrdered;
     // UNKNOWN, INSERT, UPDATE, DELETE, SELECT;
     private SqlCommandType sqlCommandType;//sql语句的类型
-    private KeyGenerator keyGenerator; //主键生长期 可以在查寻之前或者是查询之后
+    private KeyGenerator keyGenerator; //主键生成器可以在查寻之前或者是查询之后
     private String[] keyProperties;
     private String[] keyColumns;
     //是否有嵌套的结果集

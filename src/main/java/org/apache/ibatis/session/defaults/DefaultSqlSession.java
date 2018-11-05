@@ -156,6 +156,7 @@ public class DefaultSqlSession implements SqlSession {
         final List<?> list = selectList(statement, parameter, rowBounds);
         final DefaultMapResultHandler<K, V> mapResultHandler = new DefaultMapResultHandler<K, V>(mapKey,
                 configuration.getObjectFactory(), configuration.getObjectWrapperFactory());
+
         final DefaultResultContext context = new DefaultResultContext();
         for (Object o : list) {
             //循环用DefaultMapResultHandler处理每条记录
