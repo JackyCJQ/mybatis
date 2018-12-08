@@ -114,12 +114,22 @@ public class XPathParser {
         this.document = createDocument(new InputSource(new StringReader(xml)));
     }
 
+    /**
+     * 程序应用的创建方式
+     *
+     * @param reader
+     * @param validation
+     * @param variables
+     * @param entityResolver
+     */
     public XPathParser(Reader reader, boolean validation, Properties variables, EntityResolver entityResolver) {
         commonConstructor(validation, variables, entityResolver);
         this.document = createDocument(new InputSource(reader));
     }
 
     /**
+     * 程序应用的创建方式
+     *
      * @param inputStream    xml文件流
      * @param validation     是否对xml格式进行验证
      * @param variables      最初声明的Properties文件
@@ -152,7 +162,7 @@ public class XPathParser {
     /**
      * 根据解析路径表达式 来获取相应的值
      *
-     * @param root
+     * @param root       document
      * @param expression
      * @return
      */
@@ -225,7 +235,7 @@ public class XPathParser {
         List<XNode> xnodes = new ArrayList<XNode>();
         NodeList nodes = (NodeList) evaluate(expression, root, XPathConstants.NODESET);
         for (int i = 0; i < nodes.getLength(); i++) {
-            //对于放回的Node又进行了依次封装
+            //对于返回的Node又进行了依次封装
             xnodes.add(new XNode(this, nodes.item(i), variables));
         }
         return xnodes;
@@ -277,7 +287,7 @@ public class XPathParser {
             factory.setNamespaceAware(false);
             //忽略注释
             factory.setIgnoringComments(true);
-            //忽略空白
+            //忽略空白 所以解析的时候会带有空格
             factory.setIgnoringElementContentWhitespace(false);
             //把 CDATA 节点转换为 Text 节点
             factory.setCoalescing(false);
@@ -288,6 +298,7 @@ public class XPathParser {
             //需要注意的就是定义了EntityResolver(XMLMapperEntityResolver)，这样不用联网去获取DTD，
             //将DTD放在org\apache\ibatis\builder\xml\mybatis-3-config.dtd,来达到验证xml合法性的目的
             builder.setEntityResolver(entityResolver);
+            //解析出错 都是要抛出异常
             builder.setErrorHandler(new ErrorHandler() {
                 @Override
                 public void error(SAXParseException exception) throws SAXException {
@@ -303,6 +314,7 @@ public class XPathParser {
                 public void warning(SAXParseException exception) throws SAXException {
                 }
             });
+            //解析之后会生成一个dom树
             return builder.parse(inputSource);
         } catch (Exception e) {
             throw new BuilderException("Error creating document instance.  Cause: " + e, e);

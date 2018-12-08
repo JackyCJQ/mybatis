@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import static org.apache.ibatis.executor.ExecutionPlaceholder.EXECUTION_PLACEHOLDER;
 
 /**
- * 执行器基类
+ * 执行器基类，设置通用的属性配置
  */
 public abstract class BaseExecutor implements Executor {
 
@@ -90,6 +90,7 @@ public abstract class BaseExecutor implements Executor {
                 //关闭的时候 是否需要回滚数据
                 rollback(forceRollback);
             } finally {
+                //关闭数据库连接，释放资源
                 if (transaction != null) {
                     transaction.close();
                 }
@@ -98,6 +99,7 @@ public abstract class BaseExecutor implements Executor {
             // Ignore.  There's nothing that can be done at this point.
             log.warn("Unexpected exception on closing transaction.  Cause: " + e);
         } finally {
+            //确保所有引用的资源都被释放
             transaction = null;
             deferredLoads = null;
             localCache = null;
@@ -404,7 +406,7 @@ public abstract class BaseExecutor implements Executor {
         }
 
         public boolean canLoad() {
-            //缓存中找到，且不为占位符，代表可以加载
+            //缓存中找到，且不为占位符，代表可以加载，也就是依赖的查询已经执行完毕后
             return localCache.getObject(key) != null && localCache.getObject(key) != EXECUTION_PLACEHOLDER;
         }
 
@@ -413,7 +415,7 @@ public abstract class BaseExecutor implements Executor {
             @SuppressWarnings("unchecked")
             // we suppose we get back a List
                     List<Object> list = (List<Object>) localCache.getObject(key);
-            //调用ResultExtractor.extractObjectFromList
+            //从依赖的结果集中抽取出需要的条件
             Object value = resultExtractor.extractObjectFromList(list, targetType);
             resultObject.setValue(property, value);
         }

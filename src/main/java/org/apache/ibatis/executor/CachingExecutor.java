@@ -28,147 +28,148 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * @author Clinton Begin
- * @author Eduardo Macarron
- */
-
-/**
- * 二级缓存执行器
+ * 如果开启了 二级缓存执行器
  */
 public class CachingExecutor implements Executor {
+    //真正的执行器
+    private Executor delegate;
+    private TransactionalCacheManager tcm = new TransactionalCacheManager();
 
-  private Executor delegate;
-  private TransactionalCacheManager tcm = new TransactionalCacheManager();
+    public CachingExecutor(Executor delegate) {
+        this.delegate = delegate;
+        delegate.setExecutorWrapper(this);
+    }
 
-  public CachingExecutor(Executor delegate) {
-    this.delegate = delegate;
-    delegate.setExecutorWrapper(this);
-  }
+    @Override
+    public Transaction getTransaction() {
+        return delegate.getTransaction();
+    }
 
-  @Override
-  public Transaction getTransaction() {
-    return delegate.getTransaction();
-  }
+    @Override
+    public void close(boolean forceRollback) {
+        try {
+            //issues #499, #524 and #573
+            if (forceRollback) {
+                tcm.rollback();
+            } else {
+                tcm.commit();
+            }
+        } finally {
+            delegate.close(forceRollback);
+        }
+    }
 
-  @Override
-  public void close(boolean forceRollback) {
-    try {
-      //issues #499, #524 and #573
-      if (forceRollback) { 
-        tcm.rollback();
-      } else {
+    @Override
+    public boolean isClosed() {
+        return delegate.isClosed();
+    }
+
+    @Override
+    public int update(MappedStatement ms, Object parameterObject) throws SQLException {
+        //刷新缓存完再update
+        flushCacheIfRequired(ms);
+        return delegate.update(ms, parameterObject);
+    }
+
+    @Override
+    public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+        BoundSql boundSql = ms.getBoundSql(parameterObject);
+        //query时传入一个cachekey参数
+        CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
+        return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+    }
+
+    //被ResultLoader.selectList调用
+    @Override
+    public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
+            throws SQLException {
+        //在对应的mapper.xml中也需要开启二级缓存开关
+        Cache cache = ms.getCache();
+        //默认情况下是没有开启缓存的(二级缓存).要开启二级缓存,你需要在你的 SQL 映射文件中添加一行: <cache/>
+        //简单的说，就是先查CacheKey，查不到再委托给实际的执行器去查
+        if (cache != null) {
+            //看mapper.xml是否配置了要清空缓存的配置
+            flushCacheIfRequired(ms);
+            if (ms.isUseCache() && resultHandler == null) {
+                ensureNoOutParams(ms, parameterObject, boundSql);
+                @SuppressWarnings("unchecked")
+                List<E> list = (List<E>) tcm.getObject(cache, key);
+                if (list == null) {
+                    //如果不存在缓存，在去执行
+                    list = delegate.<E>query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+                   //把查询的结果在放入进缓存中
+                    tcm.putObject(cache, key, list); // issue #578 and #116
+                }
+                //如果存在就直接返回缓存的结果
+                return list;
+            }
+        }
+        //如果没有在xml中配置开启缓存，就不用缓存，在委托给具体的执行器去查询
+        return delegate.<E>query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+    }
+
+    @Override
+    public List<BatchResult> flushStatements() throws SQLException {
+        return delegate.flushStatements();
+    }
+
+    @Override
+    public void commit(boolean required) throws SQLException {
+        delegate.commit(required);
         tcm.commit();
-      }
-    } finally {
-      delegate.close(forceRollback);
     }
-  }
 
-  @Override
-  public boolean isClosed() {
-    return delegate.isClosed();
-  }
-
-  @Override
-  public int update(MappedStatement ms, Object parameterObject) throws SQLException {
-	//刷新缓存完再update
-    flushCacheIfRequired(ms);
-    return delegate.update(ms, parameterObject);
-  }
-
-  @Override
-  public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
-    BoundSql boundSql = ms.getBoundSql(parameterObject);
-	//query时传入一个cachekey参数
-    CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
-    return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
-  }
-
-  //被ResultLoader.selectList调用
-  @Override
-  public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
-      throws SQLException {
-    Cache cache = ms.getCache();
-    //默认情况下是没有开启缓存的(二级缓存).要开启二级缓存,你需要在你的 SQL 映射文件中添加一行: <cache/>
-    //简单的说，就是先查CacheKey，查不到再委托给实际的执行器去查
-    if (cache != null) {
-      flushCacheIfRequired(ms);
-      if (ms.isUseCache() && resultHandler == null) {
-        ensureNoOutParams(ms, parameterObject, boundSql);
-        @SuppressWarnings("unchecked")
-        List<E> list = (List<E>) tcm.getObject(cache, key);
-        if (list == null) {
-          list = delegate.<E> query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
-          tcm.putObject(cache, key, list); // issue #578 and #116
+    @Override
+    public void rollback(boolean required) throws SQLException {
+        try {
+            delegate.rollback(required);
+        } finally {
+            if (required) {
+                tcm.rollback();
+            }
         }
-        return list;
-      }
     }
-    return delegate.<E> query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
-  }
 
-  @Override
-  public List<BatchResult> flushStatements() throws SQLException {
-    return delegate.flushStatements();
-  }
-
-  @Override
-  public void commit(boolean required) throws SQLException {
-    delegate.commit(required);
-    tcm.commit();
-  }
-
-  @Override
-  public void rollback(boolean required) throws SQLException {
-    try {
-      delegate.rollback(required);
-    } finally {
-      if (required) {
-        tcm.rollback();
-      }
-    }
-  }
-
-  private void ensureNoOutParams(MappedStatement ms, Object parameter, BoundSql boundSql) {
-    if (ms.getStatementType() == StatementType.CALLABLE) {
-      for (ParameterMapping parameterMapping : boundSql.getParameterMappings()) {
-        if (parameterMapping.getMode() != ParameterMode.IN) {
-          throw new ExecutorException("Caching stored procedures with OUT params is not supported.  Please configure useCache=false in " + ms.getId() + " statement.");
+    private void ensureNoOutParams(MappedStatement ms, Object parameter, BoundSql boundSql) {
+        if (ms.getStatementType() == StatementType.CALLABLE) {
+            for (ParameterMapping parameterMapping : boundSql.getParameterMappings()) {
+                if (parameterMapping.getMode() != ParameterMode.IN) {
+                    throw new ExecutorException("Caching stored procedures with OUT params is not supported.  Please configure useCache=false in " + ms.getId() + " statement.");
+                }
+            }
         }
-      }
     }
-  }
 
-  @Override
-  public CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql) {
-    return delegate.createCacheKey(ms, parameterObject, rowBounds, boundSql);
-  }
-
-  @Override
-  public boolean isCached(MappedStatement ms, CacheKey key) {
-    return delegate.isCached(ms, key);
-  }
-
-  @Override
-  public void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class<?> targetType) {
-    delegate.deferLoad(ms, resultObject, property, key, targetType);
-  }
-
-  @Override
-  public void clearLocalCache() {
-    delegate.clearLocalCache();
-  }
-
-  private void flushCacheIfRequired(MappedStatement ms) {
-    Cache cache = ms.getCache();
-    if (cache != null && ms.isFlushCacheRequired()) {      
-      tcm.clear(cache);
+    @Override
+    public CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql) {
+        return delegate.createCacheKey(ms, parameterObject, rowBounds, boundSql);
     }
-  }
 
-  @Override
-  public void setExecutorWrapper(Executor executor) {
-    throw new UnsupportedOperationException("This method should not be called");
-  }
+    @Override
+    public boolean isCached(MappedStatement ms, CacheKey key) {
+        return delegate.isCached(ms, key);
+    }
+
+    @Override
+    public void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class<?> targetType) {
+        delegate.deferLoad(ms, resultObject, property, key, targetType);
+    }
+
+    @Override
+    public void clearLocalCache() {
+        delegate.clearLocalCache();
+    }
+
+    private void flushCacheIfRequired(MappedStatement ms) {
+        Cache cache = ms.getCache();
+        if (cache != null && ms.isFlushCacheRequired()) {
+            tcm.clear(cache);
+        }
+    }
+
+    @Override
+    public void setExecutorWrapper(Executor executor) {
+        throw new UnsupportedOperationException("This method should not be called");
+    }
 
 }

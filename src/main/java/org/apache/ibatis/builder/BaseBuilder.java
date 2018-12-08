@@ -195,7 +195,7 @@ public abstract class BaseBuilder {
         if (typeHandlerAlias == null) {
             return null;
         }
-        //根据类型别名或者是完成的类名 查找是否已经注册
+        //根据类型别名或者是完成的类名 查找是否已经注册，如果是全类名则会new一个
         Class<?> type = resolveClass(typeHandlerAlias);
         //如果自己声明类型处理器，必须要继承TypeHandler
         if (type != null && !TypeHandler.class.isAssignableFrom(type)) {
@@ -220,14 +220,14 @@ public abstract class BaseBuilder {
         //typeHandlerRegistry 提前注册好了每个Class与其一个实例 每次应用不用在重复创建，类似于单例模式
         TypeHandler<?> handler = typeHandlerRegistry.getMappingTypeHandler(typeHandlerType);
         if (handler == null) {
-            //如果没有注册，调用typeHandlerRegistry.getInstance来new一个TypeHandler返回
+            //如果是自定义的，则没有注册，调用typeHandlerRegistry.getInstance来new一个TypeHandler返回，并且不会注册进去
             handler = typeHandlerRegistry.getInstance(javaType, typeHandlerType);
         }
         return handler;
     }
 
     /**
-     * 查找typeAliasRegistry中是否存在整个别名对应的Class，也可以是全类名
+     * 查找typeAliasRegistry中是否存在这个别名，如果是全类名则会new一个
      *
      * @param alias
      * @return

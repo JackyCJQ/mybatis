@@ -26,13 +26,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * 结果集包装类 用来分析结果集
- *
- * @author Iwao AVE!
+ * 结果集包装类 用来分析结果集，很重要
  */
 class ResultSetWrapper {
     //真实查询数据库返回的结果集
     private final ResultSet resultSet;
+    //类型处理器，来处理对应的结果集
     private final TypeHandlerRegistry typeHandlerRegistry;
     private final List<String> columnNames = new ArrayList<String>();
     private final List<String> classNames = new ArrayList<String>();

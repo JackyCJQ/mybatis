@@ -126,6 +126,8 @@ public class MapperMethod {
     }
 
     /**
+     * 自定义处理器进行结果的处理
+     *
      * @param sqlSession
      * @param args
      */

@@ -35,83 +35,41 @@ public interface Executor {
 
     /**
      * 更新操作
-     *
-     * @param ms
-     * @param parameter
-     * @return
-     * @throws SQLException
      */
     int update(MappedStatement ms, Object parameter) throws SQLException;
 
     /**
      * 查询操作
-     *
-     * @param ms
-     * @param parameter
-     * @param rowBounds
-     * @param resultHandler
-     * @param cacheKey
-     * @param boundSql
-     * @param <E>
-     * @return
-     * @throws SQLException
      */
     <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException;
 
     /**
      * 查询操作
-     *
-     * @param ms
-     * @param parameter
-     * @param rowBounds
-     * @param resultHandler
-     * @param <E>
-     * @return
-     * @throws SQLException
      */
     <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException;
 
     /**
      * 批量刷新操作
-     *
-     * @return
-     * @throws SQLException
      */
     List<BatchResult> flushStatements() throws SQLException;
 
     /**
      * 提交操作
-     *
-     * @param required
-     * @throws SQLException
      */
     void commit(boolean required) throws SQLException;
 
     /**
      * 回滚操作
-     *
-     * @param required
-     * @throws SQLException
      */
     void rollback(boolean required) throws SQLException;
 
     /**
      * 创建缓存key
-     *
-     * @param ms
-     * @param parameterObject
-     * @param rowBounds
-     * @param boundSql
-     * @return
      */
     CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql);
 
     /**
      * 是否存在缓存
-     *
-     * @param ms
-     * @param key
-     * @return
      */
     boolean isCached(MappedStatement ms, CacheKey key);
 
@@ -122,40 +80,26 @@ public interface Executor {
 
     /**
      * 延迟加载
-     *
-     * @param ms
-     * @param resultObject
-     * @param property
-     * @param key
-     * @param targetType
      */
     void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class<?> targetType);
 
     /**
      * 获取事务
-     *
-     * @return
      */
     Transaction getTransaction();
 
     /**
      * 关闭执行器
-     *
-     * @param forceRollback
      */
     void close(boolean forceRollback);
 
     /**
      * 是否是关闭状态
-     *
-     * @return
      */
     boolean isClosed();
 
     /**
      * 封装执行器
-     *
-     * @param executor
      */
     void setExecutorWrapper(Executor executor);
 

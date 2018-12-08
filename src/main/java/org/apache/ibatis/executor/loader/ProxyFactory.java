@@ -22,10 +22,6 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * @author Eduardo Macarron
- */
-
-/**
  * 延迟加载代理工厂
  */
 public interface ProxyFactory {

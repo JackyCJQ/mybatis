@@ -117,6 +117,7 @@ public class Configuration {
     protected Properties variables = new Properties();
     //对象工厂 生成对象的默认工厂
     protected ObjectFactory objectFactory = new DefaultObjectFactory();
+    //默认对象包装工厂
     protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
 
     //mapper接口注册机

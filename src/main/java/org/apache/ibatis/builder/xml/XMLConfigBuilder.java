@@ -51,7 +51,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     private boolean parsed;
     //XPath解析器，解析xml文档的核心
     private XPathParser parser;
-    //对应的数据库环境 可以配置多个数据库环境
+    //对应的数据库环境 可以配置多个数据库环境，并且可以在运行的时候临时指定一个
     private String environment;
 
     /**
@@ -103,6 +103,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         //是否存在用户自己引入的配置文件 通过和spring整合时引入的配置文件
         this.configuration.setVariables(props);
         this.parsed = false;
+        //构建时指定的数据库环境
         this.environment = environment;
         this.parser = parser;
     }
@@ -337,7 +338,7 @@ public class XMLConfigBuilder extends BaseBuilder {
                     throw new BuilderException("The setting " + key + " is not known.  Make sure you spelled it correctly (case sensitive).");
                 }
             }
-
+            //这里处理比较有意思，全都在设置一遍
             //如何自动映射列到字段/属性  默认是匹配不嵌套的
             configuration.setAutoMappingBehavior(AutoMappingBehavior.valueOf(props.getProperty("autoMappingBehavior", "PARTIAL")));
             //是否开启二级缓存

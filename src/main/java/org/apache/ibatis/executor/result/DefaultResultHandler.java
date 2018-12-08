@@ -36,6 +36,7 @@ public class DefaultResultHandler implements ResultHandler {
 
     @SuppressWarnings("unchecked")
     public DefaultResultHandler(ObjectFactory objectFactory) {
+        //创建一个空的list
         list = objectFactory.create(List.class);
     }
 

@@ -36,11 +36,11 @@ import java.util.List;
  */
 public class DefaultParameterHandler implements ParameterHandler {
 
-    //类型处理注册器
+    //类型处理注册器,在设置参数的时候需要从中选取对应的类型处理器
     private final TypeHandlerRegistry typeHandlerRegistry;
-
+    //
     private final MappedStatement mappedStatement;
-    //参数
+    //Java设置的参数
     private final Object parameterObject;
     //对应的sql
     private BoundSql boundSql;
@@ -60,43 +60,47 @@ public class DefaultParameterHandler implements ParameterHandler {
         return parameterObject;
     }
 
-    //设置参数
+    //根据Java传递的参数，设置sql参数
     @Override
     public void setParameters(PreparedStatement ps) throws SQLException {
         //设置一个上下文 用来跟踪设置参数的过程 会不会出错
         ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
-        //得到参数映射
+        //得到Java参数和数据库参数映射关系
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-
+        //如果有参数的情况
         if (parameterMappings != null) {
             for (int i = 0; i < parameterMappings.size(); i++) {
                 ParameterMapping parameterMapping = parameterMappings.get(i);
                 //如果是in则为查询过程，需要设置参数
                 if (parameterMapping.getMode() != ParameterMode.OUT) {
                     Object value;
-                    //获取属性值
+                    //获取属性值，即#{properties}
                     String propertyName = parameterMapping.getProperty();
                     //设置额外参数
                     if (boundSql.hasAdditionalParameter(propertyName)) {
                         value = boundSql.getAdditionalParameter(propertyName);
-                    } else if (parameterObject == null) {
-                        //若参数为null，直接设null
+                    }
+                    //若参数为null，直接设null
+                    else if (parameterObject == null) {
                         value = null;
-                    } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-                        //若参数有相应的TypeHandler，直接设object
+                    }
+                    //若参数有相应的TypeHandler，说明为基本类型的参数
+                    else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
+
                         value = parameterObject;
                     } else {
-                        //除此以外，MetaObject.getValue反射取得值设进去
+                        //除此以外，MetaObject.getValue通过反射的方式来获取对应的值
                         MetaObject metaObject = configuration.newMetaObject(parameterObject);
                         value = metaObject.getValue(propertyName);
                     }
+                    //这个位置是一定需要参数处理器来进行处理的，在解析配置文件的时候怎么发现对应的类型的？？
                     TypeHandler typeHandler = parameterMapping.getTypeHandler();
                     JdbcType jdbcType = parameterMapping.getJdbcType();
                     if (value == null && jdbcType == null) {
-                        //不管是数据为null,还是jdbc为Null,设置的时候需要数据库自适应
+                        //如果value为null，jdbc也为null,就需要数据库自适应了（有些数据库在设置值为null，的时候，需要设置对应的类型）
                         jdbcType = configuration.getJdbcTypeForNull();
                     }
-                    //最终设置参数
+                    //最终在这里设置参数,
                     typeHandler.setParameter(ps, i + 1, value, jdbcType);
                 }
             }

@@ -26,12 +26,12 @@ import java.io.Reader;
 import java.util.Properties;
 
 /**
- *   程序的入口
- *   用来构建SqlSessionFactory
- *   通过SqlSessionFactory来得到sqlSession,sqlSession负责每一次会话
- *   通过字节流或者是字符流的方式读取xml配置文件
- *   Reader reader =Resources.getResourceAsReader("mybatis-config.xml");
- *   InputStream inputStream=Resources.getResourceAsStream("mybatis-config.xml");
+ * 程序的入口
+ * 用来构建SqlSessionFactory
+ * 通过SqlSessionFactory来得到sqlSession,sqlSession负责每一次会话
+ * 通过字节流或者是字符流的方式读取xml配置文件
+ * Reader reader =Resources.getResourceAsReader("mybatis-config.xml");
+ * InputStream inputStream=Resources.getResourceAsStream("mybatis-config.xml");
  */
 
 public class SqlSessionFactoryBuilder {
@@ -52,7 +52,8 @@ public class SqlSessionFactoryBuilder {
      * factory = new SqlSessionFactoryBuilder().build(reader);
      * 在通过比如spring结合时通过spring来注入相关的属性
      * factory = new SqlSessionFactoryBuilder().build(reader,"id",new Properties());
-     * @param reader  一个读取xml配置文件的流
+     *
+     * @param reader      一个读取xml配置文件的流
      * @param environment 可以指定不同的数据源的环境 通过ID来标示
      * @param properties  可以自己加载一个配置文件，此时这个配置的级别应该是最低的，后来加载的如果由重复的属性，会进行覆盖
      * @return
@@ -108,6 +109,7 @@ public class SqlSessionFactoryBuilder {
 
     /**
      * 默认使用DefaultSqlSessionFactory
+     *
      * @param config
      * @return
      */

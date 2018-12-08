@@ -53,6 +53,7 @@ public class DefaultMapResultHandler<K, V> implements ResultHandler {
         final MetaObject mo = MetaObject.forObject(value, objectFactory, objectWrapperFactory);
         //获取结果集中 关于mapkey的值
         final K key = (K) mo.getValue(mapKey);
+        //就是把指定的MapKey作为key来进行存放
         mappedResults.put(key, value);
     }
 

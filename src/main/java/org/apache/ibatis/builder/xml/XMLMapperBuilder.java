@@ -116,7 +116,7 @@ public class XMLMapperBuilder extends BaseBuilder {
             //mapper.xml和mapper接口绑定到一起
             bindMapperForNamespace();
         }
-        //还有没解析完的东东这里接着解析？
+        //如果解析过程中存在错误，则在全部解析完之后尝试着在此之前解析
         parsePendingResultMaps();
         parsePendingChacheRefs();
         parsePendingStatements();
@@ -632,6 +632,7 @@ public class XMLMapperBuilder extends BaseBuilder {
             } catch (ClassNotFoundException e) {
                 //ignore, bound type is not required
             }
+            //如果没有和接口绑定在一起，这个位置应该是空的
             if (boundType != null) {
                 //如果全局配置中还没有加载对应的mapper接口
                 if (!configuration.hasMapper(boundType)) {

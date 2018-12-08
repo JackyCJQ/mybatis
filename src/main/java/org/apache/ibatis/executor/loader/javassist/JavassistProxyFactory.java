@@ -39,10 +39,6 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * @author Eduardo Macarron
- */
-
-/**
  * Javassist延迟加载代理工厂
  */
 public class JavassistProxyFactory implements org.apache.ibatis.executor.loader.ProxyFactory {
@@ -105,6 +101,7 @@ public class JavassistProxyFactory implements org.apache.ibatis.executor.loader.
   private static class EnhancedResultObjectProxyImpl implements MethodHandler {
 
     private Class<?> type;
+    //所有延迟加载的集合
     private ResultLoaderMap lazyLoader;
     private boolean aggressive;
     private Set<String> lazyLoadTriggerMethods;

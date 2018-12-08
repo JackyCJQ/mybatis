@@ -20,15 +20,14 @@ import java.sql.SQLException;
 
 /**
  * 参数处理器
- * 
  */
 public interface ParameterHandler {
 
-  //得到参数
-  Object getParameterObject();
+    //得到Java设置的参数
+    Object getParameterObject();
 
-  //设置参数
-  void setParameters(PreparedStatement ps)
-      throws SQLException;
+    //对于预编译之后的prepareStatement设置参数
+    void setParameters(PreparedStatement ps)
+            throws SQLException;
 
 }

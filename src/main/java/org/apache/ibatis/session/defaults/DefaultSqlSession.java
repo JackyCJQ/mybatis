@@ -72,6 +72,7 @@ public class DefaultSqlSession implements SqlSession {
      * @param executor
      */
     public DefaultSqlSession(Configuration configuration, Executor executor) {
+
         this(configuration, executor, false);
     }
 
@@ -106,7 +107,7 @@ public class DefaultSqlSession implements SqlSession {
     }
 
     /**
-     * 查询执行的核心操作
+     * 查询执行的核心操作，默认查询是带内存分页的
      *
      * @param statement Unique identifier matching the statement to use.
      * @param parameter A parameter object to pass to the statement.
@@ -178,7 +179,7 @@ public class DefaultSqlSession implements SqlSession {
         select(statement, null, RowBounds.DEFAULT, handler);
     }
 
-    //核心select,带有ResultHandler，和selectList代码差不多的，区别就一个ResultHandler
+    //核心select,带有ResultHandler，和selectList代码差不多的，不带返回值的查询 ，自带结果处理器 ResultHandler
     @Override
     public void select(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
         try {
@@ -207,7 +208,7 @@ public class DefaultSqlSession implements SqlSession {
     }
 
     /**
-     * 插入和更新的核心操作
+     * 插入，更新，删除的核心操作
      * parameter:是一个map
      */
     @Override
@@ -246,7 +247,7 @@ public class DefaultSqlSession implements SqlSession {
         try {
             //转而用执行器来commit
             executor.commit(isCommitOrRollbackRequired(force));
-            //每次commit之后，dirty标志设为false
+            //每次commit之后，就不再是脏数据了，dirty标志设为false
             dirty = false;
         } catch (Exception e) {
             throw ExceptionFactory.wrapException("Error committing transaction.  Cause: " + e, e);
@@ -266,6 +267,7 @@ public class DefaultSqlSession implements SqlSession {
         try {
             //转而用执行器来rollback
             executor.rollback(isCommitOrRollbackRequired(force));
+            //回滚之后也不是脏数据了
             dirty = false;
         } catch (Exception e) {
             throw ExceptionFactory.wrapException("Error rolling back transaction.  Cause: " + e, e);

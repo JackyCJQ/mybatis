@@ -28,7 +28,7 @@ public class PropertyParser {
   /**
    *
    * @param string 需要替换的变量 ${}这种格式
-   * @param variables 属性配置
+   * @param variables 全局属性配置
    * @return
    */
   public static String parse(String string, Properties variables) {
@@ -56,7 +56,7 @@ public class PropertyParser {
       if (variables != null && variables.containsKey(content)) {
         return variables.getProperty(content);
       }
-      //如果不存在返回 愿配置 例如 ${username}
+      //如果不存在返回 原配置 例如 ${username}
       return "${" + content + "}";
     }
   }

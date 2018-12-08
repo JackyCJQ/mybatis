@@ -36,7 +36,7 @@ public class DefaultVFS extends VFS {
   private static final Log log = LogFactory.getLog(ResolverUtil.class);
 
   /** The magic header that indicates a JAR (ZIP) file. */
-  //jar包类型的标志
+  //jar包类型的魔法数字
   private static final byte[] JAR_MAGIC = { 'P', 'K', 3, 4 };
 
   /**

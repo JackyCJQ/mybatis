@@ -26,7 +26,7 @@ import java.util.Properties;
  * 用户只需调用Resources相关api即可
  */
 public class Resources {
-    //对ClassLoader的封装的引用 文件加载的实际执行者
+    //对ClassLoader的封装的引用 文件加载的实际执行者,私有变量
     private static ClassLoaderWrapper classLoaderWrapper = new ClassLoaderWrapper();
     /*
      *当把字节流转为字符流时 指定的编码格式  inputStream-->reader

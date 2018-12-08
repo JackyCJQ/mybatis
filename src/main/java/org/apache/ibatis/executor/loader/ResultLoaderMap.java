@@ -37,11 +37,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * @author Clinton Begin
- * @author Franta Mejta
- */
-
-/**
  * 结果延迟加载器映射
  * 
  */

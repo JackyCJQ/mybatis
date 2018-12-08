@@ -35,6 +35,7 @@ public class GenericTokenParser {
 
     /**
      * 一般就是 <property name="username" value="${username}"/>
+     *
      * @param text ${username}
      * @return
      */
@@ -42,9 +43,9 @@ public class GenericTokenParser {
         StringBuilder builder = new StringBuilder();
         if (text != null && text.length() > 0) {
             char[] src = text.toCharArray();
-            //记录处理过的位置
+            //记录偏移量
             int offset = 0;
-            //第一次从0开始寻找
+            //第一次从0开始寻找，是否存在开始字符
             int start = text.indexOf(openToken, offset);
             //#{favouriteSection,jdbcType=VARCHAR}
             // 比如可以解析${first_name} ${initial} sdf${last_name} reporting.这样的字符串,里面有3个 ${}
@@ -56,8 +57,9 @@ public class GenericTokenParser {
                     builder.append(src, offset, start - offset - 1).append(openToken);
                     offset = start + openToken.length();
                 } else {
-                    //这里是需要解析属性
+                    //这里是需要解析属性，得到结束字符的位置
                     int end = text.indexOf(closeToken, start);
+                    //
                     if (end == -1) {
                         builder.append(src, offset, src.length - offset);
                         offset = src.length;
