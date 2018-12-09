@@ -28,8 +28,6 @@ public final class PropertyNamer {
         // Prevent Instantiation of Static Class
     }
 
-    //方法转为属性
-
     /**
      * 方法的名字
      *
@@ -54,8 +52,6 @@ public final class PropertyNamer {
         }
         return name;
     }
-
-    //是否是属性
 
     /**
      * @param name 方法的名字

@@ -33,6 +33,7 @@ public class SetFieldInvoker implements Invoker {
   //反射为字段赋值
   @Override
   public Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException {
+   //set放射就需要一个参数即可
     field.set(target, args[0]);
     return null;
   }

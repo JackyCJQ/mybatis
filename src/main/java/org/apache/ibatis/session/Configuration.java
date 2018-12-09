@@ -341,6 +341,7 @@ public class Configuration {
 
     public void setProxyFactory(ProxyFactory proxyFactory) {
         if (proxyFactory == null) {
+            //默认是Java动态代理
             proxyFactory = new JavassistProxyFactory();
         }
         this.proxyFactory = proxyFactory;

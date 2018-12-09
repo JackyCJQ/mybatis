@@ -39,7 +39,7 @@ public class MetaObject {
     this.originalObject = object;
     this.objectFactory = objectFactory;
     this.objectWrapperFactory = objectWrapperFactory;
-
+    //对应原数据进行一些判断
     if (object instanceof ObjectWrapper) {
         //如果对象本身已经是ObjectWrapper型，则直接赋给objectWrapper
       this.objectWrapper = (ObjectWrapper) object;

@@ -82,6 +82,7 @@ public class BeanWrapper extends BaseWrapper {
   public Class<?> getSetterType(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
+      //map或者是数组
       MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
         return metaClass.getSetterType(name);

@@ -73,6 +73,7 @@ public class SqlSessionFactoryBuilder {
              */
             ErrorContext.instance().reset();
             try {
+                //关闭流
                 reader.close();
             } catch (IOException e) {
             }

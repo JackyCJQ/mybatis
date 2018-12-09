@@ -341,14 +341,14 @@ public class XMLConfigBuilder extends BaseBuilder {
             //这里处理比较有意思，全都在设置一遍
             //如何自动映射列到字段/属性  默认是匹配不嵌套的
             configuration.setAutoMappingBehavior(AutoMappingBehavior.valueOf(props.getProperty("autoMappingBehavior", "PARTIAL")));
-            //是否开启二级缓存
+            //是否开启二级缓存。默认是开启的
             configuration.setCacheEnabled(booleanValueOf(props.getProperty("cacheEnabled"), true));
             //proxyFactory (CGLIB | JAVASSIST)
             //延迟加载的核心技术就是用代理模式，CGLIB/JAVASSIST两者选一
             configuration.setProxyFactory((ProxyFactory) createInstance(props.getProperty("proxyFactory")));
-            //延迟加载
+            //延迟加载 默认不是延迟加载
             configuration.setLazyLoadingEnabled(booleanValueOf(props.getProperty("lazyLoadingEnabled"), false));
-            //延迟加载时，每种属性是否还要按需加载
+            //
             configuration.setAggressiveLazyLoading(booleanValueOf(props.getProperty("aggressiveLazyLoading"), true));
             //允不允许多种结果集从一个单独的语句中返回
             configuration.setMultipleResultSetsEnabled(booleanValueOf(props.getProperty("multipleResultSetsEnabled"), true));
@@ -358,7 +358,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             configuration.setUseGeneratedKeys(booleanValueOf(props.getProperty("useGeneratedKeys"), false));
             //配置默认的执行器
             configuration.setDefaultExecutorType(ExecutorType.valueOf(props.getProperty("defaultExecutorType", "SIMPLE")));
-            //超时时间
+            //超时时间 默认是没有设置超时时间
             configuration.setDefaultStatementTimeout(integerValueOf(props.getProperty("defaultStatementTimeout"), null));
             //是否将DB字段自动映射到驼峰式Java属性（A_COLUMN-->aColumn）
             configuration.setMapUnderscoreToCamelCase(booleanValueOf(props.getProperty("mapUnderscoreToCamelCase"), false));
@@ -366,13 +366,13 @@ public class XMLConfigBuilder extends BaseBuilder {
             configuration.setSafeRowBoundsEnabled(booleanValueOf(props.getProperty("safeRowBoundsEnabled"), false));
             //默认用session级别的缓存 默认是Session
             configuration.setLocalCacheScope(LocalCacheScope.valueOf(props.getProperty("localCacheScope", "SESSION")));
-            //为null值设置jdbctype
+            //为null值设置jdbctype的处理类型为other
             configuration.setJdbcTypeForNull(JdbcType.valueOf(props.getProperty("jdbcTypeForNull", "OTHER")));
             //Object的哪些方法将触发延迟加载
             configuration.setLazyLoadTriggerMethods(stringSetValueOf(props.getProperty("lazyLoadTriggerMethods"), "equals,clone,hashCode,toString"));
             //使用安全的ResultHandler
             configuration.setSafeResultHandlerEnabled(booleanValueOf(props.getProperty("safeResultHandlerEnabled"), true));
-            //动态SQL生成语言所使用的脚本语言
+            //动态SQL生成语言所使用的脚本语言,默认使用XMLLanguageDriver
             configuration.setDefaultScriptingLanguage(resolveClass(props.getProperty("defaultScriptingLanguage")));
             //当结果集中含有Null值时是否执行映射对象的setter或者Map对象的put方法。此设置对于原始类型如int,boolean等无效。
             configuration.setCallSettersOnNulls(booleanValueOf(props.getProperty("callSettersOnNulls"), false));
@@ -405,7 +405,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     private void environmentsElement(XNode context) throws Exception {
         if (context != null) {
             if (environment == null) {
-                //如果初始化的时候没有配置使用的数据环境，则使用配置文件中，default配置的
+                //如果初始化的时候没有配置使用的数据环境，则使用xml配置文件中，default配置的
                 environment = context.getStringAttribute("default");
             }
             //可能会配置多个数据源，循环解析每个数据源
@@ -413,6 +413,7 @@ public class XMLConfigBuilder extends BaseBuilder {
                 //获取每个配置的数据源的ID
                 String id = child.getStringAttribute("id");
                 //说明一个environments标签可以配置多个environment，可以配置一个测试的和一个生产的
+                //找到与default指定的一致的环境
                 if (isSpecifiedEnvironment(id)) {
                     //与数据环境相关的 就是  数据环境和事务
                     //多个session查询同时进行，需要一个工厂来提供对应的数据环境和事务

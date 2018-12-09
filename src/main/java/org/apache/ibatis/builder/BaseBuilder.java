@@ -41,6 +41,7 @@ public abstract class BaseBuilder {
 
     public BaseBuilder(Configuration configuration) {
         this.configuration = configuration;
+        //在创建configuration的时候已经进行了初始化
         this.typeAliasRegistry = this.configuration.getTypeAliasRegistry();
         this.typeHandlerRegistry = this.configuration.getTypeHandlerRegistry();
     }
@@ -105,6 +106,7 @@ public abstract class BaseBuilder {
             return null;
         }
         try {
+            //枚举类 如果不存在就会抛出异常
             return JdbcType.valueOf(alias);
         } catch (IllegalArgumentException e) {
             throw new BuilderException("Error resolving JdbcType. Cause: " + e, e);

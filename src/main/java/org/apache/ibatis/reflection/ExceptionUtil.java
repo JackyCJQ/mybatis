@@ -17,11 +17,6 @@ package org.apache.ibatis.reflection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
-
-/**
- * @author Clinton Begin
- */
-
 /**
  * 异常工具
  *
@@ -32,6 +27,7 @@ public class ExceptionUtil {
     // Prevent Instantiation
   }
 
+  //处理这两种特殊的异常
   public static Throwable unwrapThrowable(Throwable wrapped) {
     Throwable unwrapped = wrapped;
     while (true) {

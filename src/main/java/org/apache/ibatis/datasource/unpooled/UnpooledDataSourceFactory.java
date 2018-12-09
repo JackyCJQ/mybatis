@@ -44,7 +44,7 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
   public void setProperties(Properties properties) {
     Properties driverProperties = new Properties();
     MetaObject metaDataSource = SystemMetaObject.forObject(dataSource);
-
+    //遍历属性
     for (Object key : properties.keySet()) {
       String propertyName = (String) key;
       //作为可选项,你可以传递数据库驱动的属性。要这样做,属性的前缀是以“driver.”开 头的,例如

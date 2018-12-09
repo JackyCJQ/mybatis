@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * JDBC类型枚举，重新封装了sql的类型码
+ * JDBC类型枚举，重新封装了sql的类型码,不能从外部进行扩展
  */
 public enum JdbcType {
     ARRAY(Types.ARRAY),
@@ -61,14 +61,14 @@ public enum JdbcType {
     //codeLookup存放几乎全部的jdbc类型
     private static Map<Integer, JdbcType> codeLookup = new HashMap<Integer, JdbcType>();
 
-    //初始化就加载到内存，只需加载一次，提升性能
+    //初始化就加载到内存，只需加载一次，提升性能，每次直接从map中获取
     static {
         for (JdbcType type : JdbcType.values()) {
             codeLookup.put(type.TYPE_CODE, type);
         }
     }
 
-    JdbcType(int code) {
+     JdbcType(int code) {
         this.TYPE_CODE = code;
     }
 

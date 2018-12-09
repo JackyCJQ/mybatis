@@ -25,7 +25,8 @@ public class PropertyTokenizer implements Iterable<PropertyTokenizer>, Iterator<
     //例子： person[0].birthdate.year
     private String name; //person
     private String indexedName; //person[0]
-    private String index; //如果存在中括号，则解析里面的数字索引
+    private String index;
+    //如果存在中括号，则解析里面的数字索引，如果是map，则为key,例如：map['key']，所以这里用的是String
     private String children; //每次解析一个.之后剩下的部分
 
     public PropertyTokenizer(String fullname) {
@@ -71,7 +72,7 @@ public class PropertyTokenizer implements Iterable<PropertyTokenizer>, Iterator<
         return children != null;
     }
 
-    //取得下一个,非常简单，直接再通过儿子来new另外一个实例
+    //取得下一个,非常简单，直接再通过儿子来new另外一个实例，类似于递归
     @Override
     public PropertyTokenizer next() {
         return new PropertyTokenizer(children);

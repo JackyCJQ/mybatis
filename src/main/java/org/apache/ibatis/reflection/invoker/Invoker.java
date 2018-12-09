@@ -19,13 +19,13 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  *
- * 对于类的反射
+ * 反射接口，实现对字段，方法的反射获取、设置值
  * 
  */
 public interface Invoker {
   //类的反射
   Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException;
 
-  //反射的类的类型
+  //如果是对字段的反射，则为字段的类型；如果是对方法的反射，则为返回值的类型或者是参数的类型
   Class<?> getType();
 }

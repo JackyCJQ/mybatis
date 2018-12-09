@@ -25,12 +25,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
+
 /**
  * 类的元信息
  */
 public class MetaClass {
 
-    //有一个反射器
     //可以看到方法基本都是再次委派给这个Reflector
     private Reflector reflector;
 
@@ -39,7 +39,7 @@ public class MetaClass {
         this.reflector = Reflector.forClass(type);
     }
 
-    //重新生成一个Reflector
+    //提供一个静态方法供外界使用
     public static MetaClass forClass(Class<?> type) {
         return new MetaClass(type);
     }
@@ -54,17 +54,19 @@ public class MetaClass {
         Reflector.setClassCacheEnabled(classCacheEnabled);
     }
 
-    //得到一个属性名字
+    //为一个属性创建MetaClass
     public MetaClass metaClassForProperty(String name) {
         Class<?> propType = reflector.getGetterType(name);
         return MetaClass.forClass(propType);
     }
 
+    //如果书写的正确就能找到，如果书写的错误 就是null
     public String findProperty(String name) {
         StringBuilder prop = buildProperty(name, new StringBuilder());
         return prop.length() > 0 ? prop.toString() : null;
     }
 
+    //是否使用的是驼峰命名方式
     public String findProperty(String name, boolean useCamelCaseMapping) {
         if (useCamelCaseMapping) {
             name = name.replace("_", "");
@@ -80,6 +82,7 @@ public class MetaClass {
         return reflector.getSetablePropertyNames();
     }
 
+    //递归的方式调用，返回最终的类型
     public Class<?> getSetterType(String name) {
         PropertyTokenizer prop = new PropertyTokenizer(name);
         if (prop.hasNext()) {
@@ -89,7 +92,7 @@ public class MetaClass {
             return reflector.getSetterType(prop.getName());
         }
     }
-
+    //同样的方式是递归调用
     public Class<?> getGetterType(String name) {
         PropertyTokenizer prop = new PropertyTokenizer(name);
         if (prop.hasNext()) {
@@ -180,6 +183,7 @@ public class MetaClass {
         return reflector.getSetInvoker(name);
     }
 
+
     private StringBuilder buildProperty(String name, StringBuilder builder) {
         PropertyTokenizer prop = new PropertyTokenizer(name);
         if (prop.hasNext()) {
@@ -187,7 +191,9 @@ public class MetaClass {
             if (propertyName != null) {
                 builder.append(propertyName);
                 builder.append(".");
+                //为引用类型的属性创建一个MetaClass
                 MetaClass metaProp = metaClassForProperty(propertyName);
+                //相当与递归调用了
                 metaProp.buildProperty(prop.getChildren(), builder);
             }
         } else {

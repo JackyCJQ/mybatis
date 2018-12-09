@@ -53,6 +53,7 @@ public class JndiDataSourceFactory implements DataSourceFactory {
 
             if (properties.containsKey(INITIAL_CONTEXT)
                     && properties.containsKey(DATA_SOURCE)) {
+                //
                 Context ctx = (Context) initCtx.lookup(properties.getProperty(INITIAL_CONTEXT));
                 dataSource = (DataSource) ctx.lookup(properties.getProperty(DATA_SOURCE));
             } else if (properties.containsKey(DATA_SOURCE)) {

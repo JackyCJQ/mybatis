@@ -75,7 +75,7 @@ public class JdbcTransaction implements Transaction {
 
     @Override
     public void commit() throws SQLException {
-        //连接不为空 且是不是自动提交，自动提交也不要回滚 一位已经提交了，在提交也没有意义
+        //连接不为空 且是不是自动提交，自动提交也不要回滚 因为已经提交了，在提交也没有意义
         if (connection != null && !connection.getAutoCommit()) {
             if (log.isDebugEnabled()) {
                 log.debug("Committing JDBC Connection [" + connection + "]");
@@ -86,6 +86,7 @@ public class JdbcTransaction implements Transaction {
 
     @Override
     public void rollback() throws SQLException {
+        //不是自动提交 已经提交的则不能在回滚了
         if (connection != null && !connection.getAutoCommit()) {
             if (log.isDebugEnabled()) {
                 log.debug("Rolling back JDBC Connection [" + connection + "]");

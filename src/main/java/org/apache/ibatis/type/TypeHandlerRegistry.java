@@ -42,7 +42,7 @@ public final class TypeHandlerRegistry {
 
 
     public TypeHandlerRegistry() {
-        //构造函数里注册系统内置的类型处理器，这种情况是不需要知道jdbc类型的，注册的时候jdbc类型为null
+        //构造函数里注册系统内置的类型处理器，这种情况是不需要知道jdbc类型的，只要Java类型是这个就直接使用这个处理器即可，注册的时候jdbc类型为null
         register(Boolean.class, new BooleanTypeHandler());
         register(boolean.class, new BooleanTypeHandler());
         register(JdbcType.BOOLEAN, new BooleanTypeHandler());
@@ -131,7 +131,7 @@ public final class TypeHandlerRegistry {
     }
 
 
-    //根据Java类型找到对应的,jdbctype为null的类型处理器，
+    //根据Java类型找到对应的,jdbctype为null的类型处理器，这个就肯定没有
     public boolean hasTypeHandler(Class<?> javaType) {
         return hasTypeHandler(javaType, null);
     }
@@ -282,6 +282,12 @@ public final class TypeHandlerRegistry {
         register((Type) type, jdbcType, handler);
     }
 
+    /**
+     * 核心的注册方法
+     * @param javaType
+     * @param jdbcType
+     * @param handler
+     */
     private void register(Type javaType, JdbcType jdbcType, TypeHandler<?> handler) {
         if (javaType != null) {
             //找到Java对应的多个jdbc类型
@@ -292,7 +298,7 @@ public final class TypeHandlerRegistry {
             }
             map.put(jdbcType, handler);
         }
-        //不管javaType是否为空 都会注册
+        //不管javaType是否为空 都会注册，单例模式
         ALL_TYPE_HANDLERS_MAP.put(handler.getClass(), handler);
     }
 

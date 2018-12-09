@@ -26,7 +26,7 @@ public enum ResultSetType {
   SCROLL_INSENSITIVE(ResultSet.TYPE_SCROLL_INSENSITIVE),
   //结果集是可滚动的，但是对结果集变化敏感
   SCROLL_SENSITIVE(ResultSet.TYPE_SCROLL_SENSITIVE);
-
+  //枚举类一般都是私有的属性
   private int value;
 
   ResultSetType(int value) {

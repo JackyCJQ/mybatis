@@ -19,7 +19,7 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.ReflectionException;
 
 /**
- * 默认对象包装器工厂
+ * 默认对象包装器工厂，几乎没什么用
  * 
  */
 public class DefaultObjectWrapperFactory implements ObjectWrapperFactory {

@@ -14,10 +14,6 @@
  *    limitations under the License.
  */
 package org.apache.ibatis.executor;
-
-/**
- * @author Clinton Begin
- */
 /**
  * 
  * 错误上下文
@@ -29,10 +25,12 @@ public class ErrorContext {
   private static final ThreadLocal<ErrorContext> LOCAL = new ThreadLocal<ErrorContext>();
 
   private ErrorContext stored;
+  //对应资源的ID
   private String resource;
   private String activity;
   private String object;
   private String message;
+  //对应的错误sql
   private String sql;
   private Throwable cause;
  

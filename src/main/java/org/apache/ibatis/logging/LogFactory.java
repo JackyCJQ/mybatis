@@ -76,7 +76,7 @@ public final class LogFactory {
         });
     }
 
-    //单例模式
+    //单例模式，静态模式，不能被外部初始化
     private LogFactory() {
         // disable construction
     }
@@ -94,7 +94,7 @@ public final class LogFactory {
      */
     public static Log getLog(String logger) {
         try {
-            //构造函数必须提供一个为String型，指明logger的名称
+            //构造函数必须提供一个为String型，指明logger的名称，每次都需要new一个，能不能指定为一个静态的？
             return logConstructor.newInstance(new Object[]{logger});
         } catch (Throwable t) {
             throw new LogException("Error creating logger for logger " + logger + ".  Cause: " + t, t);
@@ -143,11 +143,14 @@ public final class LogFactory {
      * @param runnable
      */
     private static void tryImplementation(Runnable runnable) {
+        //如果已经发现了其他的日志实现，就不在查找
         if (logConstructor == null) {
             try {
                 //这里调用的不是start,而是run！根本就没用多线程嘛！
                 runnable.run();
+
             } catch (Throwable t) {
+                //在这里把没有找到的异常给处理掉了
                 // ignore
             }
         }

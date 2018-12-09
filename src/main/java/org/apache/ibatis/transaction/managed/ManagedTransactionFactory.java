@@ -30,6 +30,7 @@ import java.util.Properties;
  */
 public class ManagedTransactionFactory implements TransactionFactory {
 
+  //默认是要关闭连接
   private boolean closeConnection = true;
 
   @Override

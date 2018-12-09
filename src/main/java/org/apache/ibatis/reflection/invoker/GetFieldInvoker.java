@@ -32,6 +32,7 @@ public class GetFieldInvoker implements Invoker {
     //反射，获取字段的值
     @Override
     public Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException {
+        //因此这里就不需要参数
         return field.get(target);
     }
 

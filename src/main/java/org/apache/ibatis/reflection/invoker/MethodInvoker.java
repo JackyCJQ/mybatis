@@ -43,7 +43,7 @@ public class MethodInvoker implements Invoker {
   public Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException {
     return method.invoke(target, args);
   }
-  //获取对应的类型
+  //如果是set方法，则是参数的类型；如果是get方法，则是返回值的类型
   @Override
   public Class<?> getType() {
     return type;

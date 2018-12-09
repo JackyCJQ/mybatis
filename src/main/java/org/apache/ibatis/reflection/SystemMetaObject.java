@@ -22,10 +22,6 @@ import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
 import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 /**
- * @author Clinton Begin
- */
-
-/**
  * 一些系统级别的元对象
  *
  */
@@ -33,6 +29,7 @@ public final class SystemMetaObject {
 
   public static final ObjectFactory DEFAULT_OBJECT_FACTORY = new DefaultObjectFactory();
   public static final ObjectWrapperFactory DEFAULT_OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
+  //代表一个null对象，反射的时候就什么都没有了
   public static final MetaObject NULL_META_OBJECT = MetaObject.forObject(NullObject.class, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY);
 
   private SystemMetaObject() {
