@@ -36,7 +36,7 @@ public class DefaultResultHandler implements ResultHandler {
 
     @SuppressWarnings("unchecked")
     public DefaultResultHandler(ObjectFactory objectFactory) {
-        //创建一个空的list
+        //创建一个空的list。默认创建的是ArrayList
         list = objectFactory.create(List.class);
     }
 

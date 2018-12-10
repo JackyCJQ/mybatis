@@ -70,13 +70,14 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     private final Map<CacheKey, List<PendingRelation>> pendingRelations = new HashMap<CacheKey, List<PendingRelation>>();
 
     /**
-     *
+     * 这个是不是延迟加载的？？？
      */
     private static class PendingRelation {
         public MetaObject metaObject;
         public ResultMapping propertyMapping;
     }
 
+    //数据几乎都是传递进来的
     public DefaultResultSetHandler(Executor executor, MappedStatement mappedStatement, ParameterHandler parameterHandler, ResultHandler resultHandler, BoundSql boundSql,
                                    RowBounds rowBounds) {
         this.executor = executor;
@@ -93,11 +94,13 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     //
     // HANDLE OUTPUT PARAMETER
     //
-
+    //处理存储过程
     @Override
     public void handleOutputParameters(CallableStatement cs) throws SQLException {
+        //获取参数
         final Object parameterObject = parameterHandler.getParameterObject();
         final MetaObject metaParam = configuration.newMetaObject(parameterObject);
+        //获取参数映射
         final List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
         //循环处理每个参数
         for (int i = 0; i < parameterMappings.size(); i++) {
@@ -112,6 +115,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
                 } else {
                     //否则是普通型，核心就是CallableStatement.getXXX取得值
                     final TypeHandler<?> typeHandler = parameterMapping.getTypeHandler();
+                    //直接获取值进行回填
                     metaParam.setValue(parameterMapping.getProperty(), typeHandler.getResult(cs, i + 1));
                 }
             }
@@ -121,12 +125,17 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     //处理游标(OUT参数)
     private void handleRefCursorOutputParameter(ResultSet rs, ParameterMapping parameterMapping, MetaObject metaParam) throws SQLException {
         try {
+            //获取对应的resultMap
             final String resultMapId = parameterMapping.getResultMapId();
+            //获取配置的resultMap
             final ResultMap resultMap = configuration.getResultMap(resultMapId);
+            //默认结果处理器
             final DefaultResultHandler resultHandler = new DefaultResultHandler(objectFactory);
+            //包装结果集
             final ResultSetWrapper rsw = new ResultSetWrapper(rs, configuration);
             //里面就和一般ResultSet处理没两样了
             handleRowValues(rsw, resultMap, resultHandler, new RowBounds(), null);
+            //利用反射，设置结果
             metaParam.setValue(parameterMapping.getProperty(), resultHandler.getResultList());
         } finally {
             // issue #228 (close resultsets)
@@ -284,7 +293,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     //
     // HANDLE ROWS FOR SIMPLE RESULTMAP
     //
-
+    //处理每一行结果集
     private void handleRowValues(ResultSetWrapper rsw, ResultMap resultMap, ResultHandler resultHandler, RowBounds rowBounds, ResultMapping parentMapping) throws SQLException {
         //对应的resultMap是否有嵌套查询
         if (resultMap.hasNestedResultMaps()) {
@@ -318,9 +327,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     private void handleRowValuesForSimpleResultMap(ResultSetWrapper rsw, ResultMap resultMap, ResultHandler resultHandler, RowBounds rowBounds, ResultMapping parentMapping)
             throws SQLException {
         DefaultResultContext resultContext = new DefaultResultContext();
-        //定位到RowBounds设置的位置
+        //定位到RowBounds设置的位置，即分页开始的位置
         skipRows(rsw.getResultSet(), rowBounds);
-        //如果且还存在结果集
+        //如果且还存在结果集，且还没有到分页的结尾
         while (shouldProcessMoreRows(resultContext, rowBounds) && rsw.getResultSet().next()) {
             //如果存在鉴别器 则找到对应的ResultMap
             ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(rsw.getResultSet(), resultMap, null);
@@ -343,7 +352,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     }
 
     /**
-     * 是否还继续处理结果集
+     * 是否还继续处理结果集以及是否已经到了分页的结尾
      */
     private boolean shouldProcessMoreRows(ResultContext context, RowBounds rowBounds) throws SQLException {
         return !context.isStopped() && context.getResultCount() < rowBounds.getLimit();
@@ -601,7 +610,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         //得到result type即对应的pojo类型
         final Class<?> resultType = resultMap.getType();
         final MetaClass metaType = MetaClass.forClass(resultType);
-        //获取xml中配置的初始化的参数
+        //获取xml中配置的初始化的参数映射关系
         final List<ResultMapping> constructorMappings = resultMap.getConstructorResultMappings();
         //如果有对应的类型处理器  基本型
         if (typeHandlerRegistry.hasTypeHandler(resultType)) {
@@ -622,10 +631,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     private Object createParameterizedResultObject(ResultSetWrapper rsw, Class<?> resultType, List<ResultMapping> constructorMappings,
                                                    List<Class<?>> constructorArgTypes, List<Object> constructorArgs, String columnPrefix) throws SQLException {
         boolean foundValues = false;
+        //构造参数映射
         for (ResultMapping constructorMapping : constructorMappings) {
             final Class<?> parameterType = constructorMapping.getJavaType();
             final String column = constructorMapping.getColumn();
             final Object value;
+            //是否有嵌套查询
             if (constructorMapping.getNestedQueryId() != null) {
                 value = getNestedQueryConstructorValue(rsw.getResultSet(), constructorMapping, columnPrefix);
             } else if (constructorMapping.getNestedResultMapId() != null) {
@@ -639,6 +650,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
             constructorArgs.add(value);
             foundValues = value != null || foundValues;
         }
+        //创建有参数的构造函数
         return foundValues ? objectFactory.create(resultType, constructorArgTypes, constructorArgs) : null;
     }
 
@@ -685,8 +697,9 @@ public class DefaultResultSetHandler implements ResultSetHandler {
             //因为只有1列，所以取得这一列的名字
             columnName = rsw.getColumnNames().get(0);
         }
-        //找到对应的处理器进行赋值操作
+        //找到对应的处理器
         final TypeHandler<?> typeHandler = rsw.getTypeHandler(resultType, columnName);
+        //获取对应类型的返回值
         return typeHandler.getResult(rsw.getResultSet(), columnName);
     }
 

@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class DefaultMapResultHandler<K, V> implements ResultHandler {
 
-    //内部实现是存了一个Map
+    //内部实现是存了一个Map，key就是指定的Mapkey，V 就是对应数据库的一行数据
     private final Map<K, V> mappedResults;
     //由于返回的是一个map,每个对象需要指定一个key(key可以为pojo中的一个属性值) value-->pojo
     private final String mapKey;
@@ -41,7 +41,7 @@ public class DefaultMapResultHandler<K, V> implements ResultHandler {
     public DefaultMapResultHandler(String mapKey, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory) {
         this.objectFactory = objectFactory;
         this.objectWrapperFactory = objectWrapperFactory;
-        //生成一个hashmap
+        //Map类型，默认创建HashMap
         this.mappedResults = objectFactory.create(Map.class);
         this.mapKey = mapKey;
     }

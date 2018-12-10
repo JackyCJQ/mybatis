@@ -39,7 +39,7 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Javassist延迟加载代理工厂
+ * Javassist延迟加载代理工厂,系统默认使用的
  */
 public class JavassistProxyFactory implements org.apache.ibatis.executor.loader.ProxyFactory {
 

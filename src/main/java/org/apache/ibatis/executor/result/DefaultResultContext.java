@@ -24,7 +24,7 @@ public class DefaultResultContext implements ResultContext {
 
     //每一行的结果
     private Object resultObject;
-    //结果的数量
+    //已读取的结果的数量
     private int resultCount;
     //是否停止
     private boolean stopped;

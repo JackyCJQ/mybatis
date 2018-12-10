@@ -23,7 +23,7 @@ public interface ResultContext {
     //获取结果
     Object getResultObject();
 
-    //获取结果数
+    //获取已处理结果数
     int getResultCount();
 
     //是否已经停止获取

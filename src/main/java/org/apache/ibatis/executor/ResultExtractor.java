@@ -47,6 +47,7 @@ public class ResultExtractor {
       //3.如果targetType是数组，则数组转list
       Class<?> arrayComponentType = targetType.getComponentType();
       Object array = Array.newInstance(arrayComponentType, list.size());
+      //如果数组是基本类型的
       if (arrayComponentType.isPrimitive()) {
         for (int i = 0; i < list.size(); i++) {
           Array.set(array, i, list.get(i));
