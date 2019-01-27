@@ -23,12 +23,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * mapper代理接口生产工厂
+ * mapper代理接口生产工厂，就是工厂每次都是new一个出来，其实就是每次都是新建一个，就是相当于一个工厂
  */
 public class MapperProxyFactory<T> {
-    //对应的mapper接口
     private final Class<T> mapperInterface;
-    //接口中每个方法 需要匹配具体的sql信息，所以每个方法都会对应一个MapperMethod
+    //接口中的每个接口需要和sql匹配起来
     private Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<Method, MapperMethod>();
 
     //只需传递进来一个接口

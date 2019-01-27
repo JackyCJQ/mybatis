@@ -40,19 +40,18 @@ import java.util.Map;
  * 默认SqlSession实现
  */
 public class DefaultSqlSession implements SqlSession {
+
     //默认的全局配置
     private Configuration configuration;
     //执行器
     private Executor executor;
-    /**
-     * 是否自动提交
-     */
+
     private boolean autoCommit;
     //是否是脏数据
     private boolean dirty;
 
     /**
-     * 构建的具体信息，需要有外面传进来
+     * 构建的时候 执行器已经确定了
      *
      * @param configuration
      * @param executor
@@ -67,9 +66,6 @@ public class DefaultSqlSession implements SqlSession {
 
     /**
      * 默认 不是自动提交
-     *
-     * @param configuration
-     * @param executor
      */
     public DefaultSqlSession(Configuration configuration, Executor executor) {
 
@@ -81,7 +77,6 @@ public class DefaultSqlSession implements SqlSession {
         return this.<T>selectOne(statement, null);
     }
 
-    //核心selectOne 语句和参数
     @Override
     public <T> T selectOne(String statement, Object parameter) {
         // 特别需要主要的是当没有查询到结果的时候就会返回null。因此一般建议在mapper中编写resultType的时候使用包装类型
@@ -108,12 +103,6 @@ public class DefaultSqlSession implements SqlSession {
 
     /**
      * 查询执行的核心操作，默认查询是带内存分页的
-     *
-     * @param statement Unique identifier matching the statement to use.
-     * @param parameter A parameter object to pass to the statement.
-     * @param rowBounds Bounds to limit object retrieval
-     * @param <E>
-     * @return
      */
     @Override
     public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
@@ -125,7 +114,7 @@ public class DefaultSqlSession implements SqlSession {
         } catch (Exception e) {
             throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
         } finally {
-            //每次查询完毕 都会重置错误的上下文 以便每次都是最新的错误
+            //每次查询完毕 都会重置错误的上下文 以便每次都是最新的执行错误
             ErrorContext.instance().reset();
         }
     }
@@ -142,14 +131,6 @@ public class DefaultSqlSession implements SqlSession {
 
     /**
      * map查询也是带分页的
-     *
-     * @param statement Unique identifier matching the statement to use.
-     * @param parameter A parameter object to pass to the statement.
-     * @param mapKey    The property to use as key for each value in the list.
-     * @param rowBounds Bounds to limit object retrieval
-     * @param <K>
-     * @param <V>
-     * @return
      */
     @Override
     public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey, RowBounds rowBounds) {

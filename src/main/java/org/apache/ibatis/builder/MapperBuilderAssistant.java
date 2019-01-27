@@ -36,7 +36,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
     //<mapper namespace="org.mybatis.example.BlogMapper"> 是指这个namespace中的值
     private String currentNamespace;
-    //org/mybatis/builder/PostMapper.xml 对应 mapper.xml的路径
+    //配置文件的路径
     private String resource;
     //缓存 应用的缓存
     private Cache currentCache;
@@ -437,9 +437,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
             String resultSet,
             String foreignColumn,
             boolean lazy) {
-        //Java类属性的类型
+        //Java类属性的类型，如果没有找到默认为object
         Class<?> javaTypeClass = resolveResultJavaType(resultType, property, javaType);
-        //如果没有显示配置类型处理器，则根据Java属性类型寻找合适的类型处理器
+        //如果没有显示配置类型处理器，则根据Java属性类型寻找合适的类型处理器，一般都是基本类型
         TypeHandler<?> typeHandlerInstance = resolveTypeHandler(javaTypeClass, typeHandler);
         //解析复合的列名,一般用不到，返回的是空
         List<ResultMapping> composites = parseCompositeColumnName(column);
@@ -512,6 +512,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         if (javaType == null && property != null) {
             try {
                 MetaClass metaResultType = MetaClass.forClass(resultType);
+                //如果没有指定Java中属性的类型，是通过get方法通过名字来判断的类型
                 javaType = metaResultType.getSetterType(property);
             } catch (Exception e) {
                 //ignore, following null check statement will deal with the situation

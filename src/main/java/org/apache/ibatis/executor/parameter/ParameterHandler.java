@@ -27,7 +27,6 @@ public interface ParameterHandler {
     Object getParameterObject();
 
     //对于预编译之后的prepareStatement设置参数
-    void setParameters(PreparedStatement ps)
-            throws SQLException;
+    void setParameters(PreparedStatement ps) throws SQLException;
 
 }

@@ -43,7 +43,6 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
     return (T) instantiateClass(classToCreate, constructorArgTypes, constructorArgs);
   }
 
-  //默认没有属性可以设置
   @Override
   public void setProperties(Properties properties) {
     // no props for default
@@ -53,9 +52,7 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
   private <T> T instantiateClass(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
     try {
       Constructor<T> constructor;
-      //如果没有传入constructor，调用空构造函数，核心是调用Constructor.newInstance
       if (constructorArgTypes == null || constructorArgs == null) {
-        //调用无参的构造函数
         constructor = type.getDeclaredConstructor();
         //强制使其可被访问
         if (!constructor.isAccessible()) {
@@ -63,7 +60,6 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
         }
         return constructor.newInstance();
       }
-      //如果传入constructor，调用传入的构造函数，核心是调用Constructor.newInstance
       constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[constructorArgTypes.size()]));
       if (!constructor.isAccessible()) {
         constructor.setAccessible(true);
@@ -93,19 +89,15 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
   protected Class<?> resolveInterface(Class<?> type) {
     Class<?> classToCreate;
     if (type == List.class || type == Collection.class || type == Iterable.class) {
-        //List|Collection|Iterable-->ArrayList
       classToCreate = ArrayList.class;
     } else if (type == Map.class) {
-        //Map->HashMap
       classToCreate = HashMap.class;
     } else if (type == SortedSet.class) { // issue #510 Collections Support
-        //SortedSet->TreeSet
       classToCreate = TreeSet.class;
     } else if (type == Set.class) {
-        //Set->HashSet
       classToCreate = HashSet.class;
     } else {
-        //除此以外，就用原来的类型
+        //这里就是指具体的pojo了
       classToCreate = type;
     }
     return classToCreate;
@@ -113,7 +105,6 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
 
   @Override
   public <T> boolean isCollection(Class<T> type) {
-      //是否是Collection的子类
     return Collection.class.isAssignableFrom(type);
   }
 

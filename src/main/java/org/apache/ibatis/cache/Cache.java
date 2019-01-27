@@ -34,41 +34,16 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 public interface Cache {
 
-  /**
-   * @return The identifier of this cache
-   */
   String getId();
 
-  /**
-   * @param key Can be any object but usually it is a {@link CacheKey}
-   * @param value The result of a select.
-   */
   void putObject(Object key, Object value);
 
-  /**
-   * @param key The key
-   * @return The object stored in the cache.
-   */
   Object getObject(Object key);
 
-  /**
-   * Optional. It is not called by the core.
-   * 
-   * @param key The key
-   * @return The object that was removed
-   */
   Object removeObject(Object key);
 
-  /**
-   * Clears this cache instance
-   */  
   void clear();
 
-  /**
-   * Optional. This method is not called by the core.
-   * 
-   * @return The number of elements stored in the cache (not its capacity).
-   */
   int getSize();
   
   /** 

@@ -32,16 +32,14 @@ public class DefaultMapResultHandler<K, V> implements ResultHandler {
     private final Map<K, V> mappedResults;
     //由于返回的是一个map,每个对象需要指定一个key(key可以为pojo中的一个属性值) value-->pojo
     private final String mapKey;
-    //对象工厂
     private final ObjectFactory objectFactory;
-    //对象代理工厂
     private final ObjectWrapperFactory objectWrapperFactory;
 
     @SuppressWarnings("unchecked")
     public DefaultMapResultHandler(String mapKey, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory) {
         this.objectFactory = objectFactory;
         this.objectWrapperFactory = objectWrapperFactory;
-        //Map类型，默认创建HashMap
+        //默认创建一个HashMap
         this.mappedResults = objectFactory.create(Map.class);
         this.mapKey = mapKey;
     }

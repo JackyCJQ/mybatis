@@ -31,28 +31,16 @@ public interface StatementHandler {
 
     /**
      * 准备语句
-     *
-     * @param connection
-     * @return
-     * @throws SQLException
      */
-    Statement prepare(Connection connection)
-            throws SQLException;
+    Statement prepare(Connection connection) throws SQLException;
 
     /**
      * 参数化
-     *
-     * @param statement
-     * @throws SQLException
      */
-    void parameterize(Statement statement)
-            throws SQLException;
+    void parameterize(Statement statement) throws SQLException;
 
     /**
      * 批处理
-     *
-     * @param statement
-     * @throws SQLException
      */
     void batch(Statement statement)
             throws SQLException;
@@ -60,29 +48,17 @@ public interface StatementHandler {
     /**
      * 删除，更新，插入操作执行的方法
      *
-     * @param statement
-     * @return
-     * @throws SQLException
      */
-    int update(Statement statement)
-            throws SQLException;
+    int update(Statement statement)throws SQLException;
 
     /**
      * select-->结果给ResultHandler
-     *
-     * @param statement
-     * @param resultHandler
-     * @param <E>
-     * @return
-     * @throws SQLException
      */
     <E> List<E> query(Statement statement, ResultHandler resultHandler)
             throws SQLException;
 
     /**
      * 得到绑定sql
-     *
-     * @return
      */
     BoundSql getBoundSql();
 

@@ -22,13 +22,12 @@ public class RowBounds {
 
     public static final int NO_ROW_OFFSET = 0;
     public static final int NO_ROW_LIMIT = Integer.MAX_VALUE;
+    //默认的实现
     public static final RowBounds DEFAULT = new RowBounds();
-
-    //offset,limit就等于一般分页的start,limit,
+    //偏移量
     private int offset;
     private int limit;
 
-    //默认没有实现分页
     public RowBounds() {
         this.offset = NO_ROW_OFFSET;
         this.limit = NO_ROW_LIMIT;

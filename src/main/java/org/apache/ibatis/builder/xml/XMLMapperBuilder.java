@@ -27,14 +27,12 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.*;
 
 /**
  * XML映射构建器，建造者模式,继承BaseBuilder
  */
 public class XMLMapperBuilder extends BaseBuilder {
-    //xml文档解析器 解析mapper.xml文件 生成document
     private XPathParser parser;
     //每一个mapper.xml对应一个构建助手
     private MapperBuilderAssistant builderAssistant;
@@ -47,54 +45,19 @@ public class XMLMapperBuilder extends BaseBuilder {
      */
     private String resource;
 
-    @Deprecated
-    public XMLMapperBuilder(Reader reader, Configuration configuration, String resource, Map<String, XNode> sqlFragments, String namespace) {
-        this(reader, configuration, resource, sqlFragments);
-        this.builderAssistant.setCurrentNamespace(namespace);
-    }
 
-    @Deprecated
-    public XMLMapperBuilder(Reader reader, Configuration configuration, String resource, Map<String, XNode> sqlFragments) {
-        this(new XPathParser(reader, true, configuration.getVariables(), new XMLMapperEntityResolver()),
-                configuration, resource, sqlFragments);
-    }
-
-    /**
-     * 构造函数
-     *
-     * @param inputStream   read from mapper.xml
-     * @param configuration the global configuration
-     * @param resource      mapper.xml的路径
-     * @param sqlFragments  sql碎片 在congiruration中统一保存
-     * @param namespace     mapper.xml的namespace
-     */
     public XMLMapperBuilder(InputStream inputStream, Configuration configuration, String resource, Map<String, XNode> sqlFragments, String namespace) {
         this(inputStream, configuration, resource, sqlFragments);
         this.builderAssistant.setCurrentNamespace(namespace);
     }
 
-    /**
-     * 构造函数
-     * 通过流构造一个xml解析器
-     *
-     * @param inputStream   read from mapper.xml
-     * @param configuration 全局配置
-     * @param resource      mapper.xml的路径
-     * @param sqlFragments  sql碎片 在congiruration中统一保存
-     */
+
     public XMLMapperBuilder(InputStream inputStream, Configuration configuration, String resource, Map<String, XNode> sqlFragments) {
         this(new XPathParser(inputStream, true, configuration.getVariables(), new XMLMapperEntityResolver()),
                 configuration, resource, sqlFragments);
     }
 
-    /**
-     * 所有的构造函数 最终合流到这个地方
-     *
-     * @param parser        mapper.xml的解析器
-     * @param configuration 全局配置
-     * @param resource      mapper.xml的路径
-     * @param sqlFragments  sql碎片 在congiruration中统一保存
-     */
+
     private XMLMapperBuilder(XPathParser parser, Configuration configuration, String resource, Map<String, XNode> sqlFragments) {
         super(configuration);
         this.builderAssistant = new MapperBuilderAssistant(configuration, resource);
@@ -103,11 +66,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         this.resource = resource;
     }
 
-    /**
-     * 解析mapper.xml文件
-     */
     public void parse() {
-        //确定是否已经加载过，防止重复加载
         if (!configuration.isResourceLoaded(resource)) {
             //开始解析
             configurationElement(parser.evalNode("/mapper"));
@@ -143,12 +102,10 @@ public class XMLMapperBuilder extends BaseBuilder {
      */
     private void configurationElement(XNode context) {
         try {
-            //1.配置namespace，不能为空
             String namespace = context.getStringAttribute("namespace");
             if (namespace.equals("")) {
                 throw new BuilderException("Mapper's namespace cannot be empty");
             }
-            //每一个mapper配置文件对应一个builderAssistant，每个mapper配置文件用namespace来区分
             builderAssistant.setCurrentNamespace(namespace);
             //2.配置cache-ref
             cacheRefElement(context.evalNode("cache-ref"));
@@ -371,13 +328,6 @@ public class XMLMapperBuilder extends BaseBuilder {
         }
     }
 
-    /**
-     * 5.1 解析每一个配置的resultMap
-     *
-     * @param resultMapNode
-     * @return
-     * @throws Exception
-     */
     private ResultMap resultMapElement(XNode resultMapNode) throws Exception {
         return resultMapElement(resultMapNode, Collections.<ResultMapping>emptyList());
     }
@@ -399,9 +349,10 @@ public class XMLMapperBuilder extends BaseBuilder {
         ErrorContext.instance().activity("processing " + resultMapNode.getValueBasedIdentifier());
         //如果没有指定ID 会生成一个唯一标识符来代替ID
         String id = resultMapNode.getStringAttribute("id", resultMapNode.getValueBasedIdentifier());
-        //resultMap-->type，connection-->ofType associate-->resultye Discriminator->javaType
+        //这个现在应该只有type在用
         String type = resultMapNode.getStringAttribute("type",
-                resultMapNode.getStringAttribute("ofType", resultMapNode.getStringAttribute("resultType", resultMapNode.getStringAttribute("javaType"))));
+                resultMapNode.getStringAttribute("ofType",
+                        resultMapNode.getStringAttribute("resultType", resultMapNode.getStringAttribute("javaType"))));
         /**
          * 继承功能 如果继承其他mapper.xml 可以引用本mapper中，也可以引用另一个mapper中的resultMap（namespace+resultMap的id）
          *  <resultMap id="carResult" type="Car" extends="vehicleResult">
@@ -415,14 +366,12 @@ public class XMLMapperBuilder extends BaseBuilder {
         Class<?> typeClass = resolveClass(type);
         //鉴别器
         Discriminator discriminator = null;
-        //匹配的所有结果
+        //记录所有结果的匹配集
         List<ResultMapping> resultMappings = new ArrayList<ResultMapping>();
+        //这个就是空的
         resultMappings.addAll(additionalResultMappings);
-        /**
-         * 获取每个Java属性的具体配置，每个属性对应一个ResultMapping
-         */
+
         List<XNode> resultChildren = resultMapNode.getChildren();
-        //结下resultMap下的所有有记过
         for (XNode resultChild : resultChildren) {
             //如果是构造器中含有一部分属性 则通过调用有惨构造器
             if ("constructor".equals(resultChild.getName())) {
@@ -467,7 +416,6 @@ public class XMLMapperBuilder extends BaseBuilder {
         for (XNode argChild : argChildren) {
             //可能是ID或者是构造参数
             List<ResultFlag> flags = new ArrayList<ResultFlag>();
-            //肯定都是args
             flags.add(ResultFlag.CONSTRUCTOR);
             //有的可能同时也是ID
             if ("idArg".equals(argChild.getName())) {
@@ -563,9 +511,7 @@ public class XMLMapperBuilder extends BaseBuilder {
      */
 
     private ResultMapping buildResultMappingFromContext(XNode context, Class<?> resultType, List<ResultFlag> flags) throws Exception {
-        //对应的java中的属性
         String property = context.getStringAttribute("property");
-        //对应数据库的列名
         String column = context.getStringAttribute("column");
         String javaType = context.getStringAttribute("javaType");
         String jdbcType = context.getStringAttribute("jdbcType");
@@ -575,14 +521,14 @@ public class XMLMapperBuilder extends BaseBuilder {
         String nestedResultMap = context.getStringAttribute("resultMap",
                 //如果是内部嵌套一个resultMap,则继续解析，返回一个resultMap的ID，否则返回null
                 processNestedResultMappings(context, Collections.<ResultMapping>emptyList()));
+
         String notNullColumn = context.getStringAttribute("notNullColumn");
         String columnPrefix = context.getStringAttribute("columnPrefix");
         String typeHandler = context.getStringAttribute("typeHandler");
         String resulSet = context.getStringAttribute("resultSet");
         String foreignColumn = context.getStringAttribute("foreignColumn");
-        //判断是否是懒加载
+        //判断是否是懒加载,如果没有配置会获取全局的配置
         boolean lazy = "lazy".equals(context.getStringAttribute("fetchType", configuration.isLazyLoadingEnabled() ? "lazy" : "eager"));
-        //解析JavaType
         Class<?> javaTypeClass = resolveClass(javaType);
         @SuppressWarnings("unchecked")
         Class<? extends TypeHandler<?>> typeHandlerClass = (Class<? extends TypeHandler<?>>) resolveClass(typeHandler);
@@ -631,6 +577,7 @@ public class XMLMapperBuilder extends BaseBuilder {
                 boundType = Resources.classForName(namespace);
             } catch (ClassNotFoundException e) {
                 //ignore, bound type is not required
+                //如果不存在绑定的接口则就不用绑定，不是强求的
             }
             //如果没有和接口绑定在一起，这个位置应该是空的
             if (boundType != null) {

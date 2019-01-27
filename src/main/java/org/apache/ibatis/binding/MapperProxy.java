@@ -31,9 +31,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     private static final long serialVersionUID = -6424540398559729838L;
     //代理类实际执行的时候，需要在session中执行，因为需要和对应的数据环境，事务等结合在一起才能执行
     private final SqlSession sqlSession;
-    //用户定义的mapper接口
     private final Class<T> mapperInterface;
-    //接口中每一个方法 需要和mapper.xml中的sql信息进行匹配，才能通过方法去调用对应的sql去执行
     private final Map<Method, MapperMethod> methodCache;
 
     public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
@@ -55,18 +53,11 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
                 throw ExceptionUtil.unwrapThrowable(t);
             }
         }
-        //将sql与接口中定义的方法整合起来
         final MapperMethod mapperMethod = cachedMapperMethod(method);
         //代理方法去实际执行
         return mapperMethod.execute(sqlSession, args);
     }
 
-    /**
-     * 把mapper接口中的方法和mapper.xml中的sql语句整合起来，这样就能直接通过方法调用sql语句
-     *
-     * @param method
-     * @return
-     */
     private MapperMethod cachedMapperMethod(Method method) {
         MapperMethod mapperMethod = methodCache.get(method);
         if (mapperMethod == null) {

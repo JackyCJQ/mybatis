@@ -36,6 +36,6 @@ import java.lang.annotation.Target;
 //type是注解在类上面的 由于是value可以括号里面可以省略不写 直接写值
 @Target(ElementType.TYPE)
 public @interface Alias {
-    //通过注解指定别名的值s
+    //通过注解指定别名的值
     public String value();
 }

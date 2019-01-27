@@ -49,7 +49,6 @@ public abstract class BaseExecutor implements Executor {
     protected Transaction transaction;
     //代理执行器
     protected Executor wrapper;
-
     //延迟加载队列（线程安全）
     protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
     //sql执行缓存
@@ -58,7 +57,6 @@ public abstract class BaseExecutor implements Executor {
     protected PerpetualCache localOutputParameterCache;
     //全局配置
     protected Configuration configuration;
-
     //查询堆栈
     protected int queryStack = 0;
     //执行器 开始关闭标志

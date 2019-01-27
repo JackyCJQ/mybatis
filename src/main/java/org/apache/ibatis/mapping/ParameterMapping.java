@@ -40,9 +40,9 @@ public class ParameterMapping {
     private JdbcType jdbcType;
     //numericScale 保留的数字位数
     private Integer numericScale;
-    //类型处理器
+    //对应的类型处理器
     private TypeHandler<?> typeHandler;
-    //结果集的id
+    //结果集的id，对应是属于哪个结果集
     private String resultMapId;
     //jdbcType=NUMERIC
     private String jdbcTypeName;

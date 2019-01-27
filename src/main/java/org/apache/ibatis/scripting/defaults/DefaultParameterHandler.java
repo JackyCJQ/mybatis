@@ -63,11 +63,9 @@ public class DefaultParameterHandler implements ParameterHandler {
     //根据Java传递的参数，设置sql参数
     @Override
     public void setParameters(PreparedStatement ps) throws SQLException {
-        //设置一个上下文 用来跟踪设置参数的过程 会不会出错
         ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
         //得到Java参数和数据库参数映射关系
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-        //如果有参数的情况
         if (parameterMappings != null) {
             for (int i = 0; i < parameterMappings.size(); i++) {
                 ParameterMapping parameterMapping = parameterMappings.get(i);
@@ -86,7 +84,6 @@ public class DefaultParameterHandler implements ParameterHandler {
                     }
                     //若参数有相应的TypeHandler，说明为基本类型的参数
                     else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-
                         value = parameterObject;
                     } else {
                         //除此以外，MetaObject.getValue通过反射的方式来获取对应的值

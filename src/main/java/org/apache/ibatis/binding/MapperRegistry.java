@@ -28,58 +28,41 @@ import java.util.*;
 public class MapperRegistry {
 
     private Configuration config;
-    //每一个mapper接口 都有与之对应的MapperProxyFactory，用来生成代理类
+
     private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<Class<?>, MapperProxyFactory<?>>();
 
     public MapperRegistry(Configuration config) {
         this.config = config;
     }
 
-    //返回接口的代理类实现，创建的实例需要和session中去执行
     public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
         final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
         if (mapperProxyFactory == null) {
             throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
         }
         try {
-            // 根据工厂生产一个mapper接口实例
             return mapperProxyFactory.newInstance(sqlSession);
         } catch (Exception e) {
             throw new BindingException("Error getting mapper instance. Cause: " + e, e);
         }
     }
 
-    /**
-     * 查看是否已经注册过
-     * @param type 要注册的接口
-     * @param <T>
-     * @return
-     */
     public <T> boolean hasMapper(Class<T> type) {
         return knownMappers.containsKey(type);
     }
 
-    /**
-     * 如果配置文件中是通过接口的方式来进行注册
-     * @param type
-     * @param <T>
-     */
     public <T> void addMapper(Class<T> type) {
         if (type.isInterface()) {
-            //默认每个接口只能注册一次
             if (hasMapper(type)) {
                 throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
             }
             boolean loadCompleted = false;
             try {
-                //动态代理的实现，默认给每个接口生成一个代理工厂
                 knownMappers.put(type, new MapperProxyFactory<T>(type));
-                //解析接口上添加的注解信息，以及对应的xml配置信息
                 MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
                 parser.parse();
                 loadCompleted = true;
             } finally {
-                //如果加载过程中出现异常需要再将这个mapper从mybatis中删除
                 if (!loadCompleted) {
                     //如果加载失败了 需要移除
                     knownMappers.remove(type);
@@ -88,11 +71,6 @@ public class MapperRegistry {
         }
     }
 
-    /**
-     * 返回所有的注册的mapper
-     *
-     * @since 3.2.2
-     */
     public Collection<Class<?>> getMappers() {
         return Collections.unmodifiableCollection(knownMappers.keySet());
     }
@@ -113,9 +91,6 @@ public class MapperRegistry {
         }
     }
 
-    /**
-     * @since 3.2.2
-     */
     //查找包下所有类 默认父类为Object.class，所有的类默认父类就是Object
     public void addMappers(String packageName) {
         addMappers(packageName, Object.class);
