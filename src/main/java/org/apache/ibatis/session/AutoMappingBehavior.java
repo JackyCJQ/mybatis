@@ -29,6 +29,7 @@ public enum AutoMappingBehavior {
     NONE,
 
     /**
+     * 延迟加载这个要设置为partial
      * Will only auto-map results with no nested result mappings defined inside.
      */
     PARTIAL,

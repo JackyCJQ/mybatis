@@ -27,15 +27,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 反射器, 属性->getter/setter的映射器，而且加了缓存
- * 可参考ReflectorTest来理解这个类的用处
  */
 public class Reflector {
     //默认为true
     private static boolean classCacheEnabled = true;
     //默认为空的
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
-    //这里用ConcurrentHashMap，多线程支持，作为一个缓存
-    //每个类都会提供一个Reflector，提供关于这个类的元信息，缓存每一个类
+    //每个类都会提供一个Reflector，提供关于这个类的元信息，缓存每一个类,提高性能
     private static final Map<Class<?>, Reflector> REFLECTOR_MAP = new ConcurrentHashMap<Class<?>, Reflector>();
     //要获取元数据的类
     private Class<?> type;
@@ -53,7 +51,6 @@ public class Reflector {
     private Map<String, Class<?>> getTypes = new HashMap<String, Class<?>>();
     //构造函数。默认使用的构造函数
     private Constructor<?> defaultConstructor;
-
     //加入存在set，get方法的字段
     private Map<String, String> caseInsensitivePropertyMap = new HashMap<String, String>();
 
@@ -118,8 +115,10 @@ public class Reflector {
             String name = method.getName();
             //添加所有以get开头的方法
             if (name.startsWith("get") && name.length() > 3) {
+                //并且get方法中没有参数
                 if (method.getParameterTypes().length == 0) {
                     name = PropertyNamer.methodToProperty(name);
+                    //所有的get方法都放在了一起
                     addMethodConflict(conflictingGetters, name, method);
                 }
             }
@@ -135,13 +134,14 @@ public class Reflector {
     }
 
     private void resolveGetterConflicts(Map<String, List<Method>> conflictingGetters) {
+        //遍历每一个同名的方法
         for (String propName : conflictingGetters.keySet()) {
             //获取同名的方法
             List<Method> getters = conflictingGetters.get(propName);
             Iterator<Method> iterator = getters.iterator();
             //获取第一个get方法
             Method firstMethod = iterator.next();
-            //如果只有一个get方法则就是这个方法了，不管是不是有参数
+            //如果只有一个get方法则就是这个方法了
             if (getters.size() == 1) {
                 addGetMethod(propName, firstMethod);
             } else {
@@ -368,6 +368,7 @@ public class Reflector {
     /**
      * 获取方法的签名
      *
+     *
      * @param method
      * @return
      */
@@ -392,10 +393,13 @@ public class Reflector {
         return sb.toString();
     }
 
+    //jdk提供的对于访问权限的一种管理
     private static boolean canAccessPrivateMethods() {
         try {
             SecurityManager securityManager = System.getSecurityManager();
             if (null != securityManager) {
+                //suppressAccessChecks这个就是解除对私有方法以及字段的保护
+                //参考https://blog.csdn.net/yaerfeng/article/details/7103397
                 securityManager.checkPermission(new ReflectPermission("suppressAccessChecks"));
             }
         } catch (SecurityException e) {

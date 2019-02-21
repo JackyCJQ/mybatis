@@ -49,9 +49,9 @@ public class XMLConfigBuilder extends BaseBuilder {
 
     //是否已解析 默认只解析一遍配置文件
     private boolean parsed;
-    //XPath解析器，解析xml文档的核心
+    //XPath解析器，解析xml文件格式的文档
     private XPathParser parser;
-    //对应的数据库环境 可以配置多个数据库环境，并且可以在运行的时候临时指定一个
+    //对应的数据库环境 可以配置多个数据库环境，并且可以在运行的时候临时指定一个，通过不同的ID来区分不同的数据库环境
     private String environment;
 
     /**
@@ -121,19 +121,19 @@ public class XMLConfigBuilder extends BaseBuilder {
         parsed = true;
         /** 一个简单的配置文件
          <configuration>
-             <environments default="development">
-                 <environment id="development">
-                 <transactionManager type="JDBC"/>
-                <dataSource type="POOLED">
-                    <property name="driver" value="${driver}"/>
-                    <property name="url" value="${url}"/>
-                    <property name="username" value="${username}"/>
-                    <property name="password" value="${password}"/>
-                </dataSource>
-             </environment>
+         <environments default="development">
+         <environment id="development">
+         <transactionManager type="JDBC"/>
+         <dataSource type="POOLED">
+         <property name="driver" value="${driver}"/>
+         <property name="url" value="${url}"/>
+         <property name="username" value="${username}"/>
+         <property name="password" value="${password}"/>
+         </dataSource>
+         </environment>
          </environments>
          <mappers>
-             <mapper resource="org/mybatis/example/BlogMapper.xml"/>
+         <mapper resource="org/mybatis/example/BlogMapper.xml"/>
          </mappers>
          </configuration>
          */
@@ -149,9 +149,6 @@ public class XMLConfigBuilder extends BaseBuilder {
      */
     private void parseConfiguration(XNode root) {
         try {
-            /**
-             * 这些配置 只能配置一次 不能重复配置
-             */
             //分步骤解析 每个模块的配置
             //1.properties
             propertiesElement(root.evalNode("properties"));
@@ -163,7 +160,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             objectFactoryElement(root.evalNode("objectFactory"));
             //5.对象包装工厂
             objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
-            //6.设置
+            //6.全局设置
             settingsElement(root.evalNode("settings"));
             //7.环境
             environmentsElement(root.evalNode("environments"));
@@ -190,6 +187,7 @@ public class XMLConfigBuilder extends BaseBuilder {
      * </typeAliases>
      */
     private void typeAliasesElement(XNode parent) {
+        //是否存在typeAliases节点
         if (parent != null) {
             for (XNode child : parent.getChildren()) {
                 //如果是package扫描配置
@@ -202,7 +200,7 @@ public class XMLConfigBuilder extends BaseBuilder {
                     String alias = child.getStringAttribute("alias");
                     String type = child.getStringAttribute("type");
                     try {
-                        //反射加载
+                        //反射加载这个class
                         Class<?> clazz = Resources.classForName(type);
                         if (alias == null) {
                             //如果配有注解，则会取注解的名字，没有则取类的simpleName
@@ -219,7 +217,6 @@ public class XMLConfigBuilder extends BaseBuilder {
         }
     }
 
-    //MyBatis 允许你在某一点拦截已映射语句执行的调用。默认情况下,MyBatis 允许使用插件来拦截方法调用
 
     /**
      * <plugins>
@@ -229,12 +226,13 @@ public class XMLConfigBuilder extends BaseBuilder {
      * </plugins>
      */
     private void pluginElement(XNode parent) throws Exception {
+        //如果存在plugins节点
         if (parent != null) {
             for (XNode child : parent.getChildren()) {
                 String interceptor = child.getStringAttribute("interceptor");
                 //插件下面配置的一些属性
                 Properties properties = child.getChildrenAsProperties();
-                //继承 Interceptor 并动态初始化一个实例
+                //需要继承Interceptor 并动态初始化一个实例
                 Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
                 interceptorInstance.setProperties(properties);
                 //调用InterceptorChain.addInterceptor添加进插件链
@@ -271,19 +269,19 @@ public class XMLConfigBuilder extends BaseBuilder {
             configuration.setObjectWrapperFactory(factory);
         }
     }
-    //properties配置
 
     /**
      * <properties resource="org/mybatis/example/config.properties">
      * <property name="username" value="dev_user"/>
      * <property name="password" value="F2Fa3!33TYyg"/>
      * </properties>
-     * 生效的顺序应该是 自己引用的外部变量>resource指定路径里面的><properties></properties>里面定义的属性
+     * 生效的顺序应该是 引用的外部.properties文件>resource指定路径里面的><properties></properties>里面定义的属性
      */
     private void propertiesElement(XNode context) throws Exception {
+        //如果存在properties节点，则进行解析
         if (context != null) {
             Properties defaults = context.getChildrenAsProperties();
-            //加载外部的properties文件
+            //获取配置的文件路径
             String resource = context.getStringAttribute("resource");
             String url = context.getStringAttribute("url");
             //配置properties时 只能配置resource url中的一种
@@ -296,7 +294,6 @@ public class XMLConfigBuilder extends BaseBuilder {
             } else if (url != null) {
                 defaults.putAll(Resources.getUrlAsProperties(url));
             }
-            //最初定义的变量优先级最高 其次是外部配置文件里面的配置，最后是xml中声明的配置
             Properties vars = configuration.getVariables();
             if (vars != null) {
                 //这里会覆盖之前写的配置
@@ -308,6 +305,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             configuration.setVariables(defaults);
         }
     }
+
     //这些是极其重要的调整, 它们会修改 MyBatis 在运行时的行为方式
 
     /**
@@ -328,17 +326,17 @@ public class XMLConfigBuilder extends BaseBuilder {
      * </settings>
      */
     private void settingsElement(XNode context) throws Exception {
+        //如果存在settings节点
         if (context != null) {
             //获取下面所有配置的属性
             Properties props = context.getChildrenAsProperties();
-            //检查下是否在Configuration类里都有相应的setter方法 检查name中写的设置是否有拼写错误
+            //检查下是否在Configuration类里都有相应的setter方法来检查name中写的设置是否有拼写错误
             MetaClass metaConfig = MetaClass.forClass(Configuration.class);
             for (Object key : props.keySet()) {
                 if (!metaConfig.hasSetter(String.valueOf(key))) {
                     throw new BuilderException("The setting " + key + " is not known.  Make sure you spelled it correctly (case sensitive).");
                 }
             }
-            //这里处理比较有意思，全都在设置一遍
             //如何自动映射列到字段/属性  默认是匹配不嵌套的
             configuration.setAutoMappingBehavior(AutoMappingBehavior.valueOf(props.getProperty("autoMappingBehavior", "PARTIAL")));
             //是否开启二级缓存。默认是开启的
@@ -348,11 +346,11 @@ public class XMLConfigBuilder extends BaseBuilder {
             configuration.setProxyFactory((ProxyFactory) createInstance(props.getProperty("proxyFactory")));
             //延迟加载 默认不是延迟加载
             configuration.setLazyLoadingEnabled(booleanValueOf(props.getProperty("lazyLoadingEnabled"), false));
-            //
+            //设置积极延迟加载
             configuration.setAggressiveLazyLoading(booleanValueOf(props.getProperty("aggressiveLazyLoading"), true));
             //允不允许多种结果集从一个单独的语句中返回
             configuration.setMultipleResultSetsEnabled(booleanValueOf(props.getProperty("multipleResultSetsEnabled"), true));
-            //使用列标签代替列名
+            //使用列标签代替列名，所以可以通过设置别名来进行映射
             configuration.setUseColumnLabel(booleanValueOf(props.getProperty("useColumnLabel"), true));
             //允许 JDBC 支持生成的键
             configuration.setUseGeneratedKeys(booleanValueOf(props.getProperty("useGeneratedKeys"), false));
@@ -366,7 +364,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             configuration.setSafeRowBoundsEnabled(booleanValueOf(props.getProperty("safeRowBoundsEnabled"), false));
             //默认用session级别的缓存 默认是Session
             configuration.setLocalCacheScope(LocalCacheScope.valueOf(props.getProperty("localCacheScope", "SESSION")));
-            //为null值设置jdbctype的处理类型为other
+            //为null值设置jdbctype的处理类型为other，这里可以指定为null型来处理
             configuration.setJdbcTypeForNull(JdbcType.valueOf(props.getProperty("jdbcTypeForNull", "OTHER")));
             //Object的哪些方法将触发延迟加载
             configuration.setLazyLoadTriggerMethods(stringSetValueOf(props.getProperty("lazyLoadTriggerMethods"), "equals,clone,hashCode,toString"));
@@ -385,8 +383,6 @@ public class XMLConfigBuilder extends BaseBuilder {
         }
     }
 
-    //7.环境
-
     /**
      * <environments default="development">
      * <environment id="development">
@@ -403,20 +399,20 @@ public class XMLConfigBuilder extends BaseBuilder {
      * </environments>
      */
     private void environmentsElement(XNode context) throws Exception {
+        //是否存在environments节点
         if (context != null) {
             if (environment == null) {
-                //如果初始化的时候没有配置使用的数据环境，则使用xml配置文件中，default配置的
+                //使用<environments default="development">
                 environment = context.getStringAttribute("default");
             }
             //可能会配置多个数据源，循环解析每个数据源
             for (XNode child : context.getChildren()) {
                 //获取每个配置的数据源的ID
                 String id = child.getStringAttribute("id");
-                //说明一个environments标签可以配置多个environment，可以配置一个测试的和一个生产的
+                //说明一个environments标签可以配置多个environment，比如可以配置一个测试的和一个生产的
                 //找到与default指定的一致的环境
                 if (isSpecifiedEnvironment(id)) {
-                    //与数据环境相关的 就是  数据环境和事务
-                    //多个session查询同时进行，需要一个工厂来提供对应的数据环境和事务
+                    //与环境相关的 就是数据环境和事务
                     TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
                     DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
 
@@ -432,10 +428,8 @@ public class XMLConfigBuilder extends BaseBuilder {
         }
     }
 
-    //8.databaseIdProvider
     //可以根据不同数据库执行不同的SQL，sql要加databaseId属性
     //这个功能感觉不是很实用，真要多数据库支持，那SQL工作量将会成倍增长，用mybatis以后一般就绑死在一个数据库上了。但也是一个不得已的方法吧
-    //可以参考org.apache.ibatis.submitted.multidb包里的测试用例
 //	<databaseIdProvider type="VENDOR">
 //	  <property name="SQL Server" value="sqlserver"/>
 //	  <property name="DB2" value="db2"/>        
@@ -445,7 +439,6 @@ public class XMLConfigBuilder extends BaseBuilder {
         DatabaseIdProvider databaseIdProvider = null;
         if (context != null) {
             String type = context.getStringAttribute("type");
-            // awful patch to keep backward compatibility
             //与老版本兼容
             if ("VENDOR".equals(type)) {
                 type = "DB_VENDOR";
@@ -476,7 +469,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         if (context != null) {
             String type = context.getStringAttribute("type");
             Properties props = context.getChildrenAsProperties();
-            //根据type="JDBC"解析返回适当的TransactionFactory 这个是提前已经注册好的
+            //根据type="JDBC"解析返回适当的TransactionFactory 这个是提前已经注册好的，就是两种（JdbcTransactionFactory，ManagedTransactionFactory）
             TransactionFactory factory = (TransactionFactory) resolveClass(type).newInstance();
             factory.setProperties(props);
             return factory;
@@ -499,7 +492,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         if (context != null) {
             String type = context.getStringAttribute("type");
             Properties props = context.getChildrenAsProperties();
-            //根据type="POOLED"解析返回适当的DataSourceFactory 也是提前注册好的
+            //根据type="POOLED"解析返回适当的DataSourceFactory 也是提前注册好的（JndiDataSourceFactory，PooledDataSourceFactory，UnpooledDataSourceFactory）
             DataSourceFactory factory = (DataSourceFactory) resolveClass(type).newInstance();
             factory.setProperties(props);
             return factory;
@@ -519,14 +512,16 @@ public class XMLConfigBuilder extends BaseBuilder {
      * </typeHandlers>
      */
     private void typeHandlerElement(XNode parent) throws Exception {
+        //如果存在typeHandlers
         if (parent != null) {
             for (XNode child : parent.getChildren()) {
                 //如果是package
                 if ("package".equals(child.getName())) {
                     String typeHandlerPackage = child.getStringAttribute("name");
+                    //整包资源进行注册
                     typeHandlerRegistry.register(typeHandlerPackage);
                 } else {
-                    //如果是typeHandler
+                    //如果是typeHandler，手动指定的属性
                     String javaTypeName = child.getStringAttribute("javaType");
                     String jdbcTypeName = child.getStringAttribute("jdbcType");
                     String handlerTypeName = child.getStringAttribute("handler");
@@ -541,6 +536,7 @@ public class XMLConfigBuilder extends BaseBuilder {
                             typeHandlerRegistry.register(javaTypeClass, jdbcType, typeHandlerClass);
                         }
                     } else {
+                        //如果只是注册一个类，则说明详细信息存在注解上
                         typeHandlerRegistry.register(typeHandlerClass);
                     }
                 }

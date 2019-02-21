@@ -73,6 +73,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
         if (parameter == null) {
             handler = OBJECT_TYPE_HANDLER;
         } else {
+            //通过Java的类型去匹配
             handler = typeHandlerRegistry.getTypeHandler(parameter.getClass(), jdbcType);
             // check if handler is null (issue #270)
             if (handler == null || handler instanceof UnknownTypeHandler) {

@@ -19,12 +19,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
- * References a generic type.
  * 这个地方声明为抽象类，可以获取参数的类型
  *
- * @param <T> the referenced type
- * @author Simone Tripodi
- * @since 3.1.0
  */
 public abstract class TypeReference<T> {
 

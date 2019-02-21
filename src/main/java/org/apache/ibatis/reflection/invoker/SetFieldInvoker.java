@@ -23,17 +23,16 @@ import java.lang.reflect.InvocationTargetException;
  * 
  */
 public class SetFieldInvoker implements Invoker {
-  //要反射赋值的字段
+  //要反射的字段
   private Field field;
 
   public SetFieldInvoker(Field field) {
     this.field = field;
   }
 
-  //反射为字段赋值
   @Override
   public Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException {
-   //set放射就需要一个参数即可
+   //set反射
     field.set(target, args[0]);
     return null;
   }

@@ -29,7 +29,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * 配置文件解析的基础类  builder模式
+ * 配置文件解析的基础类 ，主要是提供配置的解析的基础工具
+ * builder模式
  */
 public abstract class BaseBuilder {
     //全局配置
@@ -41,7 +42,7 @@ public abstract class BaseBuilder {
 
     public BaseBuilder(Configuration configuration) {
         this.configuration = configuration;
-        //在创建configuration的时候已经进行了初始化
+        //以下两个属性 在new configuration的时候已经进行了初始化
         this.typeAliasRegistry = this.configuration.getTypeAliasRegistry();
         this.typeHandlerRegistry = this.configuration.getTypeHandlerRegistry();
     }
@@ -98,7 +99,7 @@ public abstract class BaseBuilder {
     /**
      * 根据名称 解析成对应的枚举类型
      *
-     * @param alias jdbc类型的字符串
+     * @param alias jdbc类型枚举名字
      * @return
      */
     protected JdbcType resolveJdbcType(String alias) {
@@ -106,7 +107,7 @@ public abstract class BaseBuilder {
             return null;
         }
         try {
-            //枚举类 如果不存在就会抛出异常
+            //枚举类 如果不存在，说明需要的jdbc类型没有注册，就会抛出异常
             return JdbcType.valueOf(alias);
         } catch (IllegalArgumentException e) {
             throw new BuilderException("Error resolving JdbcType. Cause: " + e, e);
@@ -117,13 +118,14 @@ public abstract class BaseBuilder {
      * 根据名称解析ResultSetType，获取对应的枚举值
      *
      * @param alias
-     * @return FORWARD_ONLY SCROLL_INSENSITIVE  SCROLL_SENSITIVE 中的一个
+     * @return FORWARD_ONLY ：只能顺序遍历 SCROLL_INSENSITIVE ：对指针回滚，不敏感  SCROLL_SENSITIVE：对指针回退敏感
      */
     protected ResultSetType resolveResultSetType(String alias) {
         if (alias == null) {
             return null;
         }
         try {
+            //解析到对应的枚举类型
             return ResultSetType.valueOf(alias);
         } catch (IllegalArgumentException e) {
             throw new BuilderException("Error resolving ResultSetType. Cause: " + e, e);
@@ -134,7 +136,7 @@ public abstract class BaseBuilder {
      * 根据名字解析ParameterMode类型，获取对应的枚举值
      *
      * @param alias
-     * @return IN OUT  INOUT 中的一种
+     * @return IN：输入 OUT：输出（存储过程）  INOUT（存储过程） 中的一种
      */
     protected ParameterMode resolveParameterMode(String alias) {
         if (alias == null) {
@@ -149,8 +151,8 @@ public abstract class BaseBuilder {
 
     /**
      * 根据别名解析Class，然后创建一个无参的实例
-     * alias是一个已经注册进类名注册机中的类
-     * 或是 完整类名，通过反射创建
+     * alias是一个已经注册进TypeAliasRegistry中的类或是完整类名，
+     * 如果是已经注册的直接获取，如果是完整的类名通过反射创建
      * 在配置一些外部类的时候，通过此方法进行加载
      *
      * @param alias typeAliasRegistry中注册的类型别名
@@ -190,14 +192,14 @@ public abstract class BaseBuilder {
      * 查找对应的类型处理器，这个是单例的
      *
      * @param javaType         java类型
-     * @param typeHandlerAlias 注册的类型处理器别名（这个时必须的）
+     * @param typeHandlerAlias 注册的类型处理器别名或者是class文件的全路径（这个是必须的）
      * @return
      */
     protected TypeHandler<?> resolveTypeHandler(Class<?> javaType, String typeHandlerAlias) {
         if (typeHandlerAlias == null) {
             return null;
         }
-        //根据类型别名或者是完成的类名 查找是否已经注册，如果是全类名则会new一个
+        //如果这个类型处理器已经通过别名注册了，则直接获取这个class,如果是类的全路径，则重新加载这个class文件
         Class<?> type = resolveClass(typeHandlerAlias);
         //如果自己声明类型处理器，必须要继承TypeHandler
         if (type != null && !TypeHandler.class.isAssignableFrom(type)) {
@@ -211,25 +213,26 @@ public abstract class BaseBuilder {
     /**
      * 根据Java属性类型 查找对应的类型处理器
      *
-     * @param javaType
-     * @param typeHandlerType
+     * @param javaType        类型处理器对应的Java类型
+     * @param typeHandlerType 类型处理器
      * @return
      */
     protected TypeHandler<?> resolveTypeHandler(Class<?> javaType, Class<? extends TypeHandler<?>> typeHandlerType) {
         if (typeHandlerType == null) {
             return null;
         }
-        //typeHandlerRegistry 提前注册好了每个Class与其一个实例 每次应用不用在重复创建，类似于单例模式
+        //typeHandlerRegistry 提前注册好了每个Class与其一个实例 每次使用的时候不用在重复创建，类似于单例模式
         TypeHandler<?> handler = typeHandlerRegistry.getMappingTypeHandler(typeHandlerType);
         if (handler == null) {
-            //如果是自定义的，则没有注册，调用typeHandlerRegistry.getInstance来new一个TypeHandler返回，并且不会注册进去
+            //如果是自定义的类型注册器，则没有注册，调用typeHandlerRegistry.getInstance来new一个TypeHandler返回，并且不会注册进去，所以
+            //对于自定义的类型处理器，每次都是new 一个新的对象来处理
             handler = typeHandlerRegistry.getInstance(javaType, typeHandlerType);
         }
         return handler;
     }
 
     /**
-     * 查找typeAliasRegistry中是否存在这个别名，如果是全类名则会new一个
+     * 查找typeAliasRegistry中是否存在这个别名，如果是类的全路径，则会重新加载这个class文件
      *
      * @param alias
      * @return

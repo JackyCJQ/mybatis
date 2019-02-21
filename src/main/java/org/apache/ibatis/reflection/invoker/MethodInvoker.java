@@ -29,7 +29,7 @@ public class MethodInvoker implements Invoker {
 
   public MethodInvoker(Method method) {
     this.method = method;
-    //如果只有一个参数，说明是set方法
+     //如果只有一个参数，认为是set方法
     if (method.getParameterTypes().length == 1) {
       type = method.getParameterTypes()[0];
     } else {

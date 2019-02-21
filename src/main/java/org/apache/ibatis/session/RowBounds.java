@@ -16,7 +16,7 @@
 package org.apache.ibatis.session;
 
 /**
- * 分页用，记录限制
+ * 分页用，基于内存的分页
  */
 public class RowBounds {
 

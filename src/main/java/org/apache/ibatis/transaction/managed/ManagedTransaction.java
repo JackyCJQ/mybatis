@@ -23,16 +23,6 @@ import org.apache.ibatis.transaction.Transaction;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-
-/**
- * {@link Transaction} that lets the container manage the full lifecycle of the transaction.
- * Delays connection retrieval until getConnection() is called.
- * Ignores all commit or rollback requests.
- * By default, it closes the connection but can be configured not to do it.
- *
- * @see ManagedTransactionFactory
- */
-
 /**
  * 托管事务,交给容器来管理事务
  * MANAGED – 这个配置几乎没做什么。

@@ -61,9 +61,9 @@ public interface ObjectWrapper {
     boolean isCollection();
 
     //添加属性
-    public void add(Object element);
+     void add(Object element);
 
     //添加属性
-    public <E> void addAll(List<E> element);
+     <E> void addAll(List<E> element);
 
 }

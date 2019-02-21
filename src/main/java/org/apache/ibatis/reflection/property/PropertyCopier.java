@@ -28,6 +28,7 @@ public final class PropertyCopier {
 
     //如apache commons beanutil 的BeanUtils.copyProperties，Spring 的BeanUtils.copyProperties
     public static void copyBeanProperties(Class<?> type, Object sourceBean, Object destinationBean) {
+       //在相同的对象之间进行属性的复制
         Class<?> parent = type;
         while (parent != null) {
             //循环将父类的属性都要复制过来

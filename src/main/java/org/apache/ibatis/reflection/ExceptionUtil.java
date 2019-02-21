@@ -26,8 +26,7 @@ public class ExceptionUtil {
   private ExceptionUtil() {
     // Prevent Instantiation
   }
-
-  //处理这两种特殊的异常
+  //处理这两种特殊的异常，从而获取真正的异常
   public static Throwable unwrapThrowable(Throwable wrapped) {
     Throwable unwrapped = wrapped;
     while (true) {

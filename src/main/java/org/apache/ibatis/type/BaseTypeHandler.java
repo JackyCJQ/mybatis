@@ -55,7 +55,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
             }
         } else {
             //非NULL情况，怎么设还得交给不同的子类完成, setNonNullParameter是一个抽象方法
-            //根据不同的子类进行参数设置  这里只是由父类统一处理null的情况
+            //根据不同的子类进行参数设置  这里只是由父类统一处理null的情况，模版方法
             setNonNullParameter(ps, i, parameter, jdbcType);
         }
     }

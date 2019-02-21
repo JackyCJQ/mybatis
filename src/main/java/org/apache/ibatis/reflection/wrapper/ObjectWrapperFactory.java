@@ -22,10 +22,10 @@ import org.apache.ibatis.reflection.MetaObject;
  */
 public interface ObjectWrapperFactory {
 
-    //有没有包装器
+    //判断一个对象有没有包装器
     boolean hasWrapperFor(Object object);
 
-    //得到包装器
+    //获取一个对象的包装器
     ObjectWrapper getWrapperFor(MetaObject metaObject, Object object);
 
 }

@@ -129,11 +129,7 @@ public class Configuration {
     //数据库id
     protected String databaseId;
     /**
-     * Configuration factory class.
-     * Used to create Configuration for loading deserialized unread properties.
-     * 配置工厂类？？？
-     *
-     * @see <a href='https://code.google.com/p/mybatis/issues/detail?id=300'>Issue 300</a> (google code)
+     * 这个暂时没有用到
      */
     protected Class<?> configurationFactory;
     //过滤器链
@@ -162,21 +158,17 @@ public class Configuration {
     //定义在xml中的sql碎片
     protected final Map<String, XNode> sqlFragments = new StrictMap<XNode>("XML fragments parsed from previous mappers");
 
-    //不完整的SQL语句
+    //未解析成功的SQL语句
     protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<XMLStatementBuilder>();
-    //缓存引用另一个缓存中 出现了问题
+    //未解析成功的缓存引用
     protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<CacheRefResolver>();
-    //返回结果map的解析
+    //未解析成功的resultmap
     protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<ResultMapResolver>();
-    //方法解析
+    //未解析成功的方法
     protected final Collection<MethodResolver> incompleteMethods = new LinkedList<MethodResolver>();
 
     /*
-     * A map holds cache-ref relationship. The key is the namespace that
-     * references a cache bound to another namespace and the value is the
-     * namespace which the actual cache is bound to.
-     * 一个namespace 引用另一个namespace
-     * key:代表mapper中的namespace value:代表引用的另一个nameSpace
+     * 缓存引用
      */
     protected final Map<String, String> cacheRefMap = new HashMap<String, String>();
 
@@ -189,7 +181,7 @@ public class Configuration {
 
     //在解析全局配置文件的时候创建的
     public Configuration() {
-        //对于事务来说 mybatis中就两种 jdbch和MANAGED
+        //对于事务来说 mybatis中就两种 jdbc和MANAGED(让pring容器等的方式来管理事务)
         typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
         typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);
         //对于数据源来说 就一以下三种JNDI，POOLED，UNPOOLED

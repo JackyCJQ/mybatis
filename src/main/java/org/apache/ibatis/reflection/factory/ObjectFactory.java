@@ -21,16 +21,18 @@ import java.util.Properties;
 
 /**
  * 对象工厂，所有对象都要由工厂来产生
- * 
  */
 public interface ObjectFactory {
+    //工厂初始化时候可以设置一些属性
+    void setProperties(Properties properties);
 
-  void setProperties(Properties properties);
+    //无参构造器创建
+    <T> T create(Class<T> type);
 
-  <T> T create(Class<T> type);
+    //有参构造器创建
+    <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs);
 
-  <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs);
-
-  <T> boolean isCollection(Class<T> type);
+    //判断创建的是否是集合
+    <T> boolean isCollection(Class<T> type);
 
 }

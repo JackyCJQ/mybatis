@@ -37,7 +37,7 @@ public final class TypeHandlerRegistry {
 
     //class类 对应其实例 就是为了保持单例的模式，就不用每次处理数据的时候在new一个
     private final Map<Class<?>, TypeHandler<?>> ALL_TYPE_HANDLERS_MAP = new HashMap<Class<?>, TypeHandler<?>>();
-    //未知类型的处理器
+    //未知类型的处理器，还是会根据属性的类型去猜测
     private final TypeHandler<Object> UNKNOWN_TYPE_HANDLER = new UnknownTypeHandler(this);
 
 
@@ -185,6 +185,7 @@ public final class TypeHandlerRegistry {
         if (jdbcHandlerMap != null) {
             //从匹配的多个中选取符合Jdbc类型的一个
             handler = jdbcHandlerMap.get(jdbcType);
+            //如果没有的化默认获取null
             if (handler == null) {
                 handler = jdbcHandlerMap.get(null);
             }
@@ -207,9 +208,6 @@ public final class TypeHandlerRegistry {
         JDBC_TYPE_HANDLER_MAP.put(jdbcType, handler);
     }
 
-    //
-    // REGISTER INSTANCE
-    //
     @SuppressWarnings("unchecked")
     public <T> void register(TypeHandler<T> typeHandler) {
         boolean mappedTypeFound = false;
@@ -284,6 +282,7 @@ public final class TypeHandlerRegistry {
 
     /**
      * 核心的注册方法
+     *
      * @param javaType
      * @param jdbcType
      * @param handler
@@ -360,7 +359,6 @@ public final class TypeHandlerRegistry {
     }
 
     // scan
-
     public void register(String packageName) {
         ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<Class<?>>();
         //查找包下面是否有继承TypeHandler.class这个类的

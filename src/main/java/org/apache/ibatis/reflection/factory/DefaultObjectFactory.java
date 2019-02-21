@@ -37,7 +37,7 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
   @SuppressWarnings("unchecked")
   @Override
   public <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
-    //1.如果是数据结构的接口则添加默认实现 如果是具体类 则不变
+    //1.如果是接口 则添加默认实现
     Class<?> classToCreate = resolveInterface(type);
     //2.实例化类
     return (T) instantiateClass(classToCreate, constructorArgTypes, constructorArgs);
@@ -85,7 +85,7 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
     }
   }
 
-  //1.解析接口,将interface转为实际class
+  //1.解析接口,将interface转为默认实现的class
   protected Class<?> resolveInterface(Class<?> type) {
     Class<?> classToCreate;
     if (type == List.class || type == Collection.class || type == Iterable.class) {
