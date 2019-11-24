@@ -25,7 +25,7 @@ import java.util.Locale;
 public final class PropertyNamer {
 
     private PropertyNamer() {
-        // Prevent Instantiation of Static Class
+
     }
 
     /**
@@ -62,8 +62,6 @@ public final class PropertyNamer {
         return name.startsWith("get") || name.startsWith("set") || name.startsWith("is");
     }
 
-    //是否是getter
-
     /**
      * @param name 方法的名字
      * @return
@@ -71,8 +69,6 @@ public final class PropertyNamer {
     public static boolean isGetter(String name) {
         return name.startsWith("get") || name.startsWith("is");
     }
-
-    //是否是setter
 
     /**
      * @param name 方法的名字

@@ -41,15 +41,14 @@ public class MetaClass {
 
     //提供一个静态方法供外界使用
     public static MetaClass forClass(Class<?> type) {
+
         return new MetaClass(type);
     }
 
-    //是否开启缓存
     public static boolean isClassCacheEnabled() {
         return Reflector.isClassCacheEnabled();
     }
 
-    //设置是否开启缓存
     public static void setClassCacheEnabled(boolean classCacheEnabled) {
         Reflector.setClassCacheEnabled(classCacheEnabled);
     }
@@ -92,6 +91,7 @@ public class MetaClass {
             return reflector.getSetterType(prop.getName());
         }
     }
+
     //同样的方式是递归调用
     public Class<?> getGetterType(String name) {
         PropertyTokenizer prop = new PropertyTokenizer(name);

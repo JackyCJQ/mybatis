@@ -30,8 +30,9 @@ public abstract class BaseWrapper implements ObjectWrapper {
     protected static final Object[] NO_ARGUMENTS = new Object[0];
     //元数据的引用
     protected MetaObject metaObject;
-    //主要还是通过MetaObject来获取或者是设置属性的value
+
     protected BaseWrapper(MetaObject metaObject) {
+
         this.metaObject = metaObject;
     }
 

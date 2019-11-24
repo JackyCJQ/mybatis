@@ -31,7 +31,6 @@ public class PropertyTokenizer implements Iterable<PropertyTokenizer>, Iterator<
 
     public PropertyTokenizer(String fullname) {
         //person[0].birthdate.year
-        //一次进行处理
         int delim = fullname.indexOf('.');
         if (delim > -1) {
             name = fullname.substring(0, delim);
@@ -45,7 +44,7 @@ public class PropertyTokenizer implements Iterable<PropertyTokenizer>, Iterator<
         //如果存在[]这样的索引，把中括号里的数字给解析出来
         delim = name.indexOf('[');
         if (delim > -1) {
-            //person[0] [ 的位置索引
+            //person[0]  里面的对应的数字0
             index = name.substring(delim + 1, name.length() - 1);
             //person[0]-->person
             name = name.substring(0, delim);
@@ -73,7 +72,7 @@ public class PropertyTokenizer implements Iterable<PropertyTokenizer>, Iterator<
         return children != null;
     }
 
-    //取得下一个,非常简单，直接再通过儿子来new另外一个实例，类似于递归
+    //取得下一个,非常简单，直接再通过儿子来new另外一个实例，类似于递归，必须搭配上面那个方法来使用
     @Override
     public PropertyTokenizer next() {
         return new PropertyTokenizer(children);

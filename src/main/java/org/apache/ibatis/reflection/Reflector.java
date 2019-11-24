@@ -41,9 +41,8 @@ public class Reflector {
     private String[] readablePropertyNames = EMPTY_STRING_ARRAY;
     //setter的属性列表
     private String[] writeablePropertyNames = EMPTY_STRING_ARRAY;
-    //setter的方法列表 通过反射设置
+
     private Map<String, Invoker> setMethods = new HashMap<String, Invoker>();
-    //getter的方法列表，通过反射设置
     private Map<String, Invoker> getMethods = new HashMap<String, Invoker>();
     //setter设置的参数的类型
     private Map<String, Class<?>> setTypes = new HashMap<String, Class<?>>();
@@ -54,18 +53,13 @@ public class Reflector {
     //加入存在set，get方法的字段
     private Map<String, String> caseInsensitivePropertyMap = new HashMap<String, String>();
 
-    //构造行数提供一个class
     private Reflector(Class<?> clazz) {
         type = clazz;
-        //加入构造函数 默认添加无参构造函数
         addDefaultConstructor(clazz);
-        //加入getter
         addGetMethods(clazz);
-        //加入setter
         addSetMethods(clazz);
         //加入字段，只添加不存在对应set，get方法的字段，通过字段的反射来设置
         addFields(clazz);
-
         readablePropertyNames = getMethods.keySet().toArray(new String[getMethods.keySet().size()]);
         writeablePropertyNames = setMethods.keySet().toArray(new String[setMethods.keySet().size()]);
 
@@ -325,7 +319,6 @@ public class Reflector {
             for (Class<?> anInterface : interfaces) {
                 addUniqueMethods(uniqueMethods, anInterface.getMethods());
             }
-
             currentClass = currentClass.getSuperclass();
         }
 
@@ -368,7 +361,6 @@ public class Reflector {
     /**
      * 获取方法的签名
      *
-     *
      * @param method
      * @return
      */
@@ -394,7 +386,7 @@ public class Reflector {
     }
 
     //jdk提供的对于访问权限的一种管理
-    private static boolean canAccessPrivateMethods() {
+     private static boolean canAccessPrivateMethods() {
         try {
             SecurityManager securityManager = System.getSecurityManager();
             if (null != securityManager) {

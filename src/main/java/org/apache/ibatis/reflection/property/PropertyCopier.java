@@ -23,7 +23,6 @@ import java.lang.reflect.Field;
 public final class PropertyCopier {
 
     private PropertyCopier() {
-        // Prevent Instantiation of Static Class
     }
 
     //如apache commons beanutil 的BeanUtils.copyProperties，Spring 的BeanUtils.copyProperties

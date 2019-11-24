@@ -23,25 +23,24 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 /**
  * 一些系统级别的元对象
- *
  */
 public final class SystemMetaObject {
 
-  public static final ObjectFactory DEFAULT_OBJECT_FACTORY = new DefaultObjectFactory();
-  public static final ObjectWrapperFactory DEFAULT_OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
-  //代表一个null对象，反射的时候就什么都没有了
-  public static final MetaObject NULL_META_OBJECT = MetaObject.forObject(NullObject.class, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY);
+    public static final ObjectFactory DEFAULT_OBJECT_FACTORY = new DefaultObjectFactory();
+    public static final ObjectWrapperFactory DEFAULT_OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
+    //代表一个空对象，反射的时候就什么都没有了
+    public static final MetaObject NULL_META_OBJECT = MetaObject.forObject(NullObject.class, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY);
 
-  private SystemMetaObject() {
-    // Prevent Instantiation of Static Class
-  }
+    //防止被外界初始化
+    private SystemMetaObject() {
+    }
 
-  //空对象
-  private static class NullObject {
-  }
+    //空对象
+    private static class NullObject {
+    }
 
-  public static MetaObject forObject(Object object) {
-    return MetaObject.forObject(object, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY);
-  }
+    public static MetaObject forObject(Object object) {
+        return MetaObject.forObject(object, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY);
+    }
 
 }
