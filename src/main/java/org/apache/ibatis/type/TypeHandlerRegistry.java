@@ -37,7 +37,7 @@ public final class TypeHandlerRegistry {
 
     //class类 对应其实例 就是为了保持单例的模式，就不用每次处理数据的时候在new一个
     private final Map<Class<?>, TypeHandler<?>> ALL_TYPE_HANDLERS_MAP = new HashMap<Class<?>, TypeHandler<?>>();
-    //未知类型的处理器，还是会根据属性的类型去猜测
+    //未知类型的处理器
     private final TypeHandler<Object> UNKNOWN_TYPE_HANDLER = new UnknownTypeHandler(this);
 
 
@@ -219,7 +219,6 @@ public final class TypeHandlerRegistry {
                 mappedTypeFound = true;
             }
         }
-        // @since 3.1.0 - try to auto-discover the mapped type
         if (!mappedTypeFound && typeHandler instanceof TypeReference) {
             try {
                 TypeReference<T> typeReference = (TypeReference<T>) typeHandler;
@@ -270,11 +269,10 @@ public final class TypeHandlerRegistry {
         }
     }
 
+    //这里就用到了引用类型
     public <T> void register(TypeReference<T> javaTypeReference, TypeHandler<? extends T> handler) {
         register(javaTypeReference.getRawType(), handler);
     }
-
-    // java type + jdbc type + handler
 
     public <T> void register(Class<T> type, JdbcType jdbcType, TypeHandler<? extends T> handler) {
         register((Type) type, jdbcType, handler);
@@ -297,16 +295,11 @@ public final class TypeHandlerRegistry {
             }
             map.put(jdbcType, handler);
         }
-        //不管javaType是否为空 都会注册，单例模式
+        //静态实例
         ALL_TYPE_HANDLERS_MAP.put(handler.getClass(), handler);
     }
 
-    //
-    // REGISTER CLASS
-    //
-
-    // Only handler type
-
+    //通过解析typeHanlder上的注解，来获取对应的类型
     public void register(Class<?> typeHandlerClass) {
         boolean mappedTypeFound = false;
         MappedTypes mappedTypes = typeHandlerClass.getAnnotation(MappedTypes.class);
@@ -322,19 +315,14 @@ public final class TypeHandlerRegistry {
         }
     }
 
-    // java type + handler type
-
     public void register(Class<?> javaTypeClass, Class<?> typeHandlerClass) {
         register(javaTypeClass, getInstance(javaTypeClass, typeHandlerClass));
     }
-
-    // java type + jdbc type + handler type
 
     public void register(Class<?> javaTypeClass, JdbcType jdbcType, Class<?> typeHandlerClass) {
         register(javaTypeClass, jdbcType, getInstance(javaTypeClass, typeHandlerClass));
     }
 
-    // Construct a handler (used also from Builders)
 
     //获取一个类型处理器的实例
     @SuppressWarnings("unchecked")
@@ -358,14 +346,13 @@ public final class TypeHandlerRegistry {
         }
     }
 
-    // scan
+    //注册某个包路径下的类
     public void register(String packageName) {
         ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<Class<?>>();
         //查找包下面是否有继承TypeHandler.class这个类的
         resolverUtil.find(new ResolverUtil.IsA(TypeHandler.class), packageName);
         Set<Class<? extends Class<?>>> handlerSet = resolverUtil.getClasses();
         for (Class<?> type : handlerSet) {
-            //Ignore inner classes and interfaces (including package-info.java) and abstract classes
             //不是匿名内部类 不是接口 不是抽象类 则进行注册
             if (!type.isAnonymousClass() && !type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {//获取此类或接口以整数编码的 Java 语言修饰符
                 register(type);
@@ -373,10 +360,7 @@ public final class TypeHandlerRegistry {
         }
     }
 
-
-    /**
-     * @since 3.2.2
-     */
+    //获取所有已经注册了的typeHandler
     public Collection<TypeHandler<?>> getTypeHandlers() {
         return Collections.unmodifiableCollection(ALL_TYPE_HANDLERS_MAP.values());
     }

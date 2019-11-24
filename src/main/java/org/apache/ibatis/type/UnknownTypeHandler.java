@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 还是会猜会是什么类型
+ * 对于未知的类型还是会猜会是什么类型。根据顺序还是Java类型>jdbc类型?ObjectHandler
  *
  * @author Clinton Begin
  */
@@ -32,7 +32,6 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
     private TypeHandlerRegistry typeHandlerRegistry;
 
-    //这个我觉得应该是全局只有一个
     public UnknownTypeHandler(TypeHandlerRegistry typeHandlerRegistry) {
         this.typeHandlerRegistry = typeHandlerRegistry;
     }
@@ -68,6 +67,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
         return cs.getObject(columnIndex);
     }
 
+    //还是会根据类型去猜测一下 用类型处理器去处理
     private TypeHandler<? extends Object> resolveTypeHandler(Object parameter, JdbcType jdbcType) {
         TypeHandler<? extends Object> handler;
         if (parameter == null) {
@@ -75,7 +75,6 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
         } else {
             //通过Java的类型去匹配
             handler = typeHandlerRegistry.getTypeHandler(parameter.getClass(), jdbcType);
-            // check if handler is null (issue #270)
             if (handler == null || handler instanceof UnknownTypeHandler) {
                 handler = OBJECT_TYPE_HANDLER;
             }
@@ -111,7 +110,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
     private TypeHandler<?> resolveTypeHandler(ResultSetMetaData rsmd, Integer columnIndex) throws SQLException {
         TypeHandler<?> handler = null;
-
+        //获取该字段的jdbc类型和Java类型
         JdbcType jdbcType = safeGetJdbcTypeForColumn(rsmd, columnIndex);
         Class<?> javaType = safeGetClassForColumn(rsmd, columnIndex);
         if (javaType != null && jdbcType != null) {

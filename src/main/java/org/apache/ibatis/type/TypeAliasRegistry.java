@@ -115,7 +115,7 @@ public class TypeAliasRegistry {
                 value = (Class<T>) TYPE_ALIASES.get(key);
             } else {
                 //找不到，再试着将String直接转成Class(这样怪不得我们也可以直接用java.lang.Integer的方式定义，也可以就int这么定义)
-                //一般没有进行别名注册的，可以通过全路径进行加载
+                //一般没有进行别名注册的，可以通过全路径进行加载,这样的方式 不太方便，每次都是通过反射创建实例
                 value = (Class<T>) Resources.classForName(string);
             }
             return value;
@@ -203,8 +203,6 @@ public class TypeAliasRegistry {
 
     /**
      * 返回一个不可更改的视图 就是在返回时 不能进行更改 否则就会报错
-     *
-     * @since 3.2.2
      */
     public Map<String, Class<?>> getTypeAliases() {
         return Collections.unmodifiableMap(TYPE_ALIASES);

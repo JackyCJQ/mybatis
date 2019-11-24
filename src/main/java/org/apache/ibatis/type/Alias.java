@@ -27,13 +27,11 @@ import java.lang.annotation.Target;
  * <typeAlias alias="Author" type="domain.blog.Author"/>
  * 2)annotation方式
  *
- * @Alias("author")
- * public class Author {
+ * @Alias("author") public class Author {
  * ...
  * }
  */
 @Retention(RetentionPolicy.RUNTIME)
-//type是注解在类上面的 由于是value可以括号里面可以省略不写 直接写值
 @Target(ElementType.TYPE)
 public @interface Alias {
     //通过注解指定别名的值

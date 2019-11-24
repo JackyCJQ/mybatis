@@ -20,35 +20,37 @@ import java.sql.SQLException;
 
 /**
  * 事务，包装了一个Connection, 包含commit,rollback,close方法
- * 在 MyBatis 中有两种事务管理器类型(也就是 type=”[JDBC|MANAGED]”):  
- *
- * @author Clinton Begin
+ * 在 MyBatis 中有两种事务管理器类型(也就是 type=”[JDBC|MANAGED]”):
  */
 public interface Transaction {
 
-  /**
-   * Retrieve inner database connection
-   * @return DataBase connection
-   * @throws SQLException
-   */
-  Connection getConnection() throws SQLException;
+    /**
+     * Retrieve inner database connection
+     *
+     * @return DataBase connection
+     * @throws SQLException
+     */
+    Connection getConnection() throws SQLException;
 
-  /**
-   * Commit inner database connection.
-   * @throws SQLException
-   */
-  void commit() throws SQLException;
+    /**
+     * Commit inner database connection.
+     *
+     * @throws SQLException
+     */
+    void commit() throws SQLException;
 
-  /**
-   * Rollback inner database connection.
-   * @throws SQLException
-   */
-  void rollback() throws SQLException;
+    /**
+     * Rollback inner database connection.
+     *
+     * @throws SQLException
+     */
+    void rollback() throws SQLException;
 
-  /**
-   * Close inner database connection.
-   * @throws SQLException
-   */
-  void close() throws SQLException;
+    /**
+     * Close inner database connection.
+     *
+     * @throws SQLException
+     */
+    void close() throws SQLException;
 
 }
